@@ -1,0 +1,24 @@
+name: Update Duty Data
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # каждые 5 минут (минимум для GitHub Actions)
+  workflow_dispatch:      # ручной запуск
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Fetch duty data from Apps Script
+        run: |
+          curl -s "https://script.google.com/macros/s/AKfycbzc6-qRKXkwHqul4nkpV1gFfp_i87CvOZIx6k-B04_6EWZJ5HItSBOa9m8zopywjERfw-A/exec?mode=json" -o data/duty.json
+          
+      - name: Commit updated data
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "Update duty data $(date +'%Y-%m-%d %H:%M')"
+          git push
