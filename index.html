@@ -209,7 +209,7 @@ async function testPlanfix(){
 // ===== LOAD DATA =====
 async function loadData(){
     if(cfg.token)loadPlanfix();
-    if(cfg.appsScript)loadDuty();
+    loadDuty(); // Always try to load duty from PHP proxy
 }
 
 async function loadPlanfix(){
@@ -227,12 +227,16 @@ async function loadPlanfix(){
 }
 
 async function loadDuty(){
-    if(!cfg.appsScript)return;
     try{
-        const r=await fetch(cfg.appsScript+'?mode=json');
+        // Use Cloudflare Worker as proxy (no CORS issues)
+        const r=await fetch('https://duty-proxy.tisvros.workers.dev/api/duty');
         const d=await r.json();
-        if(d.success)renderDuty(d);
-    }catch(e){}
+        if(d&&d.success)renderDuty(d);
+        else console.log('Duty data error:',d);
+    }catch(e){
+        console.log('Duty load error:',e);
+        document.getElementById('dutyGrid').innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>';
+    }
 }
 
 // ===== DUTY =====
