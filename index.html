@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>Dashboard РОКАС</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0f172a;--card:#1e293b;--border:#2d3a50;--accent:#3b82f6;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--orange:#f97316;--text:#e2e8f0;--muted:#64748b;--dim:#334155}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+        .header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+        .header h1{font-size:17px;font-weight:700;color:var(--accent)}
+        .hdr-btn{background:var(--dim);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:11px;cursor:pointer}
+        .hdr-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+        .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
+        .tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+        .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+        .content{padding:12px}
+        .section{display:none}
+        .section.active{display:block}
+
+        /* Duty */
+        .duty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+        .duty-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+        .duty-card.today{border-color:var(--green);box-shadow:0 0 12px rgba(16,185,129,.2)}
+        .duty-card .day{font-size:12px;font-weight:700;color:var(--muted)}
+        .duty-card .date{font-size:16px;font-weight:800;margin:4px 0}
+        .duty-card .person{font-size:12px;margin-top:4px}
+        .duty-card .person.day-shift{color:#fbbf24}
+        .duty-card .person.evening-shift{color:#a78bfa}
+        .duty-card .person.weekend{color:var(--green)}
+
+        /* Tasks */
+        .task-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+        .task-card .t-name{font-size:14px;font-weight:600;margin-bottom:4px}
+        .task-card .t-meta{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
+        .task-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+        .b-new{background:rgba(59,130,246,.15);color:var(--accent)}
+        .b-prog{background:rgba(245,158,11,.15);color:var(--yellow)}
+        .b-done{background:rgba(16,185,129,.15);color:var(--green)}
+
+        .search{width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;margin-bottom:12px}
+        .search:focus{outline:none;border-color:var(--accent)}
+
+        .filter-bar{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+        .filter-chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap}
+        .filter-chip.active{background:var(--accent);color:white;border-color:var(--accent)}
+
+        .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+
+        /* Settings */
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;justify-content:center;align-items:center}
+        .modal-bg.active{display:flex}
+        .modal{background:var(--card);border-radius:12px;padding:20px;width:400px;max-width:95vw}
+        .modal h2{font-size:16px;margin-bottom:14px;color:var(--accent)}
+        .modal .f{margin-bottom:12px}
+        .modal label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+        .modal input{width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px}
+        .modal input:focus{outline:none;border-color:var(--accent)}
+        .mbtn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
+        .mbtn.p{background:var(--accent);color:white}
+        .mbtn.s{background:var(--dim);color:var(--text)}
+
+        .stats-row{display:flex;gap:8px;margin-bottom:12px}
+        .stat-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+        .stat-box .v{font-size:22px;font-weight:800}
+        .stat-box .l{font-size:10px;color:var(--muted);text-transform:uppercase}
+        .stat-box.blue .v{color:var(--accent)}
+        .stat-box.green .v{color:var(--green)}
+        .stat-box.yellow .v{color:var(--yellow)}
+        .stat-box.red .v{color:var(--red)}
+
+        .conn{font-size:10px;padding:2px 6px;border-radius:8px}
+        .conn.ok{background:rgba(16,185,129,.15);color:var(--green)}
+        .conn.off{background:rgba(100,116,139,.15);color:var(--muted)}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🏢 Dashboard РОКАС</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+        <span class="conn off" id="connStatus">—</span>
+        <button class="hdr-btn" onclick="openSettings()">⚙️</button>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('duty')">📅 Дежурные</div>
+    <div class="tab" onclick="switchTab('tasks')">📋 Задачи</div>
+    <div class="tab" onclick="switchTab('stats')">📊 Статистика</div>
+</div>
+
+<div class="content">
+    <!-- Duty -->
+    <div class="section active" id="secDuty">
+        <div class="stats-row">
+            <div class="stat-box green"><div class="v" id="dutyTodayCount">0</div><div class="l">Дежурных сегодня</div></div>
+            <div class="stat-box blue"><div class="v" id="dutyMonthCount">0</div><div class="l">Всего в месяце</div></div>
+        </div>
+        <div class="duty-grid" id="dutyGrid"></div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="section" id="secTasks">
+        <div class="stats-row">
+            <div class="stat-box blue"><div class="v" id="taskAll">0</div><div class="l">Всего</div></div>
+            <div class="stat-box yellow"><div class="v" id="taskActive">0</div><div class="l">В работе</div></div>
+            <div class="stat-box green"><div class="v" id="taskDone">0</div><div class="l">Выполнено</div></div>
+            <div class="stat-box red"><div class="v" id="taskOverdue">0</div><div class="l">Просрочено</div></div>
+        </div>
+        <input type="search" class="search" placeholder="🔍 Поиск задач..." id="taskSearch" oninput="filterTasks()">
+        <div class="filter-bar">
+            <div class="filter-chip active" onclick="setFilter('all',this)">Все</div>
+            <div class="filter-chip" onclick="setFilter('new',this)">Новые</div>
+            <div class="filter-chip" onclick="setFilter('progress',this)">В работе</div>
+            <div class="filter-chip" onclick="setFilter('done',this)">Выполнено</div>
+        </div>
+        <div id="taskList"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="section" id="secStats">
+        <div class="stats-row">
+            <div class="stat-box blue"><div class="v" id="statTotal">0</div><div class="l">Всего задач</div></div>
+            <div class="stat-box green"><div class="v" id="statDoneAll">0</div><div class="l">Выполнено</div></div>
+            <div class="stat-box yellow"><div class="v" id="statProgressAll">0</div><div class="l">В работе</div></div>
+            <div class="stat-box red"><div class="v" id="statOverdueAll">0</div><div class="l">Просрочено</div></div>
+        </div>
+        <div class="task-card">
+            <div class="t-name">📊 Информация</div>
+            <div class="t-meta" style="margin-top:8px;line-height:1.6">
+                <div>Дежурства загружаются из Google Таблицы</div>
+                <div>Задачи загружаются из Planfix</div>
+                <div>Данные обновляются при нажатии кнопки</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+    <div class="modal">
+        <h2>⚙️ Настройки</h2>
+        <div class="f">
+            <label>Домен Planfix</label>
+            <input type="text" id="cfgDomain" placeholder="mycompany.planfix.com">
+        </div>
+        <div class="f">
+            <label>API токен Planfix</label>
+            <input type="password" id="cfgToken" placeholder="API токен">
+        </div>
+        <div class="f">
+            <label>Apps Script URL (дежурства)</label>
+            <input type="text" id="cfgAppsScript" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <button class="mbtn p" onclick="testPlanfix()">🔌 Проверить Planfix</button>
+        <div id="testResult" style="margin-top:8px;font-size:12px"></div>
+        <button class="mbtn p" onclick="saveSettings()" style="margin-top:8px">💾 Сохранить</button>
+        <button class="mbtn s" onclick="closeSettings()">Закрыть</button>
+    </div>
+</div>
+
+<script>
+let cfg={domain:'',token:'',appsScript:''};
+let allTasks=[];
+let currentFilter='all';
+const COLORS=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+
+// ===== SETTINGS =====
+function openSettings(){
+    document.getElementById('cfgDomain').value=cfg.domain.replace('https://','');
+    document.getElementById('cfgToken').value=cfg.token;
+    document.getElementById('cfgAppsScript').value=cfg.appsScript;
+    document.getElementById('settingsModal').classList.add('active');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('active')}
+
+function saveSettings(){
+    cfg.domain=document.getElementById('cfgDomain').value.trim();
+    cfg.token=document.getElementById('cfgToken').value.trim();
+    cfg.appsScript=document.getElementById('cfgAppsScript').value.trim();
+    if(cfg.domain&&!cfg.domain.includes('.'))cfg.domain+='.planfix.com';
+    if(cfg.domain&&!cfg.domain.startsWith('http'))cfg.domain='https://'+cfg.domain;
+    localStorage.setItem('dash_cfg',JSON.stringify(cfg));
+    closeSettings();
+    showToast('Настройки сохранены');
+    loadData();
+}
+
+async function testPlanfix(){
+    const el=document.getElementById('testResult');
+    el.innerHTML='<span style="color:var(--yellow)">⏳ Проверка...</span>';
+    let d=document.getElementById('cfgDomain').value.trim();
+    let t=document.getElementById('cfgToken').value.trim();
+    if(!d||!t){el.innerHTML='<span style="color:var(--red)">Заполните домен и токен</span>';return}
+    if(!d.includes('.'))d+='.planfix.com';if(!d.startsWith('http'))d='https://'+d;
+    try{
+        const r=await fetch(d+'/api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:new URLSearchParams({method:'task.getList',access_token:t,fields:'id'}).toString()});
+        el.innerHTML=r.ok?'<span style="color:var(--green)">✅ Planfix доступен</span>':'<span style="color:var(--red)">❌ HTTP '+r.status+'</span>';
+    }catch(e){el.innerHTML='<span style="color:var(--red)">❌ '+e.message+'</span>'}
+}
+
+// ===== LOAD DATA =====
+async function loadData(){
+    if(cfg.token)loadPlanfix();
+    if(cfg.appsScript)loadDuty();
+}
+
+async function loadPlanfix(){
+    if(!cfg.domain||!cfg.token)return;
+    try{
+        const r=await fetch(cfg.domain+'/api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:new URLSearchParams({method:'task.getList',access_token:cfg.token,fields:'id,name,status,priority,deadline,assignedTo,description,contact'}).toString()});
+        const d=await r.json();
+        if(d.status==='error')return;
+        allTasks=d.tasks||d||[];
+        document.getElementById('connStatus').className='conn ok';
+        document.getElementById('connStatus').textContent=allTasks.length+' задач';
+        updateTaskStats();filterTasks();
+    }catch(e){}
+}
+
+async function loadDuty(){
+    if(!cfg.appsScript)return;
+    try{
+        const r=await fetch(cfg.appsScript+'?mode=json');
+        const d=await r.json();
+        if(d.success)renderDuty(d);
+    }catch(e){}
+}
+
+// ===== DUTY =====
+function renderDuty(data){
+    const grid=document.getElementById('dutyGrid');
+    const today=data.date.day;
+    let total=0;
+
+    // Generate calendar for current month
+    const year=data.date.year;
+    const month=data.date.month;
+    const daysInMonth=new Date(year,month,0).getDate();
+
+    let html='';
+    for(let d=1;d<=daysInMonth;d++){
+        const isToday=d===today;
+        const dayNames=['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+        const dayOfWeek=new Date(year,month-1,d).getDay();
+        const dayName=dayNames[dayOfWeek];
+
+        // Find who's on duty
+        let dayPerson='',eveningPerson='',weekendPerson='';
+        data.employees.forEach(emp=>{
+            if(emp.duties[d]==='day')dayPerson=emp.name;
+            if(emp.duties[d]==='evening')eveningPerson=emp.name;
+            if(emp.duties[d]==='weekend')weekendPerson=emp.name;
+            if(emp.duties[d])total++;
+        });
+
+        html+=`<div class="duty-card ${isToday?'today':''}">
+            <div class="day">${dayName}</div>
+            <div class="date">${d}</div>
+            ${dayPerson?`<div class="person day-shift">☀️ ${dayPerson}</div>`:''}
+            ${eveningPerson?`<div class="person evening-shift">🌙 ${eveningPerson}</div>`:''}
+            ${weekendPerson?`<div class="person weekend">🏖️ ${weekendPerson}</div>`:''}
+        </div>`;
+    }
+
+    grid.innerHTML=html;
+    document.getElementById('dutyTodayCount').textContent=
+        (data.today.day?.length||0)+(data.today.evening?.length||0);
+    document.getElementById('dutyMonthCount').textContent=total;
+}
+
+// ===== TASKS =====
+function updateTaskStats(){
+    const now=new Date();
+    let active=0,done=0,overdue=0;
+    allTasks.forEach(t=>{
+        const s=(t.status?.name||'').toLowerCase();
+        if(s.includes('работ')||s.includes('progress'))active++;
+        if(s.includes('выполн')||s.includes('done')||s.includes('заверш'))done++;
+        if(t.deadline&&new Date(t.deadline)<now&&!s.includes('выполн')&&!s.includes('done'))overdue++;
+    });
+    document.getElementById('taskAll').textContent=allTasks.length;
+    document.getElementById('taskActive').textContent=active;
+    document.getElementById('taskDone').textContent=done;
+    document.getElementById('taskOverdue').textContent=overdue;
+    document.getElementById('statTotal').textContent=allTasks.length;
+    document.getElementById('statDoneAll').textContent=done;
+    document.getElementById('statProgressAll').textContent=active;
+    document.getElementById('statOverdueAll').textContent=overdue;
+}
+
+function filterTasks(){
+    const q=(document.getElementById('taskSearch').value||'').toLowerCase();
+    const now=new Date();
+    const filtered=allTasks.filter(t=>{
+        if(q&&!t.name?.toLowerCase().includes(q)&&!(t.assignedTo?.name||'').toLowerCase().includes(q))return false;
+        const s=(t.status?.name||'').toLowerCase();
+        if(currentFilter==='new'&&(s.includes('работ')||s.includes('done')))return false;
+        if(currentFilter==='progress'&&!s.includes('работ'))return false;
+        if(currentFilter==='done'&&!s.includes('выполн')&&!s.includes('done'))return false;
+        return true;
+    });
+    renderTasks(filtered);
+}
+
+function setFilter(f,el){
+    currentFilter=f;
+    document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    filterTasks();
+}
+
+function renderTasks(tasks){
+    const el=document.getElementById('taskList');
+    if(!tasks.length){el.innerHTML='<div class="empty">Нет задач</div>';return}
+    const now=new Date();
+    el.innerHTML=tasks.map(t=>{
+        const s=(t.status?.name||'').toLowerCase();
+        let badge='b-new',badgeText='Новая';
+        if(s.includes('работ')||s.includes('progress')){badge='b-prog';badgeText='В работе'}
+        if(s.includes('выполн')||s.includes('done')||s.includes('заверш')){badge='b-done';badgeText='Выполнено'}
+        const overdue=t.deadline&&new Date(t.deadline)<now&&!s.includes('выполн')&&!s.includes('done');
+        return`<div class="task-card">
+            <div class="t-name">${esc(t.name||'Без названия')}</div>
+            <div class="t-meta">
+                <span class="task-badge ${badge}">${badgeText}</span>
+                ${t.deadline?'<span>📅 '+t.deadline+'</span>':''}
+                ${t.assignedTo?.name?'<span>👤 '+esc(t.assignedTo.name)+'</span>':''}
+                ${overdue?'<span style="color:var(--red)">⚠️ Просрочено</span>':''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ===== TABS =====
+function switchTab(tab){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
+    document.getElementById('sec'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+}
+
+// ===== UTILS =====
+function showToast(msg){
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#064e3b;color:#6ee7b7;padding:10px 20px;border-radius:10px;font-size:13px;z-index:300;transition:opacity .3s';
+    t.textContent=msg;document.body.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},2500);
+}
+function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
+
+// ===== INIT =====
+(function(){
+    try{cfg=JSON.parse(localStorage.getItem('dash_cfg')||'{}')}catch(e){}
+    if(!cfg.domain)cfg={domain:'',token:'',appsScript:''};
+    loadData();
+})();
+</script>
+</body>
+</html>
