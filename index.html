@@ -91,6 +91,8 @@
         .tw-color-purple .tw-num{color:#a78bfa}
         .tw-color-cyan .tw-num{color:#06b6d4}
         .tw-today{font-size:10px;color:#475569;margin-top:6px;border-top:1px solid #2d3a50;padding-top:6px}
+        .tw-created{font-size:11px;color:#10b981;font-weight:600;margin-bottom:2px}
+        .tw-closed{font-size:11px;color:#ef4444;font-weight:600;margin-top:2px}
         .tasks-empty{text-align:center;padding:30px;color:#475569;font-size:12px}
 
         @media(max-width:700px){
@@ -247,6 +249,13 @@ function loadTasks(){
         filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'notequal',value:3},{type:10,operator:'notequal',value:4}]
     });
 
+    // Запрос 3: Завершённые (status=3) — для счётчика "закрыто сегодня"
+    var reqDone=JSON.stringify({
+        page:1,pageSize:100,
+        fields:'id,name,status,dateTime',
+        filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'equal',value:3}]
+    });
+
     function doPost(url,body){
         return fetch(url,{method:'POST',headers:reqHeaders,body:body})
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
@@ -264,16 +273,18 @@ function loadTasks(){
 
     Promise.all([
         fetchTasks(directUrl,reqNew),
-        fetchTasks(directUrl,reqActive)
+        fetchTasks(directUrl,reqActive),
+        fetchTasks(directUrl,reqDone)
     ]).then(function(results){
-        var newD=results[0], activeD=results[1];
+        var newD=results[0], activeD=results[1], doneD=results[2];
         var newTasks=(newD.tasks)||[];
         var activeTasks=(activeD.tasks)||[];
+        var doneTasks=(doneD.tasks)||[];
 
         if(newD.error)throw new Error(newD.error);
         if(newD.result==='fail')throw new Error(newD.error||'API error');
 
-        renderTasks(newTasks,activeTasks);
+        renderTasks(newTasks,activeTasks,doneTasks);
     }).catch(function(e){
         document.getElementById('tasksWidgets').innerHTML='<div class="tasks-empty">❌ '+esc(e.message)+'</div>';
     });
@@ -285,7 +296,7 @@ function getStatusId(t){
     return typeof s==='object'?s.id:s;
 }
 
-function renderTasks(newTasks,activeTasks){
+function renderTasks(newTasks,activeTasks,doneTasks){
     var el=document.getElementById('tasksWidgets');
     if(!newTasks.length&&!activeTasks.length){
         el.innerHTML='<div class="tasks-empty">✅ Нет задач</div>';
@@ -354,25 +365,36 @@ function renderTasks(newTasks,activeTasks){
         }
     });
 
+    // Закрытые сегодня — по ЗАВЕРШЁННЫМ (status=3)
+    var doneToday=0;
+    (doneTasks||[]).forEach(function(t){
+        var dt='';
+        if(t.dateTime){var d=t.dateTime;dt=typeof d==='object'?d.date||d.datetime||'':String(d);}
+        if(dt.indexOf(todayStr)===0)doneToday++;
+    });
+
     document.getElementById('tasksCount').textContent=total;
 
     var html='';
-    html+=ww(total,totalToday,'Новых','blue');
-    html+=ww(regular,regToday,'Обычная','green');
-    html+=ww(urgent,urgToday,'Срочная','yellow');
-    html+=ww(blocking,blkToday,'Блокирующая','red');
-    html+=ww(support,supToday,'Техподдержка','cyan');
-    html+=ww(internal,intToday,'Поручения','purple');
-    html+=ww(tramvay,tramvayToday,'🚃 Трамвай','orange');
-    html+=ww(onsite,onsiteToday,'📍 Выездные','green');
-    if(noPriority)html+=ww(noPriority,npToday,'Без приоритета','blue');
+    html+=ww(total,totalToday,doneToday,'Новых','blue');
+    html+=ww(regular,regToday,doneToday,'Обычная','green');
+    html+=ww(urgent,urgToday,doneToday,'Срочная','yellow');
+    html+=ww(blocking,blkToday,doneToday,'Блокирующая','red');
+    html+=ww(support,supToday,doneToday,'Техподдержка','cyan');
+    html+=ww(internal,intToday,doneToday,'Поручения','purple');
+    html+=ww(tramvay,tramvayToday,doneToday,'🚃 Трамвай','orange');
+    html+=ww(onsite,onsiteToday,doneToday,'📍 Выездные','green');
+    if(noPriority)html+=ww(noPriority,npToday,doneToday,'Без приоритета','blue');
 
     el.innerHTML=html;
 }
 
-function ww(n,today,label,color){
-    var s='<div class="task-widget tw-color-'+color+'"><div class="tw-num">'+n+'</div><div class="tw-label">'+label+'</div>';
-    if(today)s+='<div class="tw-today">сегодня: '+today+'</div>';
+function ww(n,created,closed,label,color){
+    var s='<div class="task-widget tw-color-'+color+'">';
+    if(created)s+='<div class="tw-created">+'+created+'</div>';
+    s+='<div class="tw-num">'+n+'</div>';
+    s+='<div class="tw-label">'+label+'</div>';
+    if(closed)s+='<div class="tw-closed">−'+closed+'</div>';
     return s+'</div>';
 }
 
