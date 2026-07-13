@@ -73,21 +73,23 @@
         .loading{text-align:center;padding:40px;color:#64748b}
         .update-time{text-align:center;margin-top:24px;font-size:11px;color:#475569}
 
-        /* Tasks Widget */
+        /* Tasks Stats Widgets */
         .tasks-section{max-width:1200px;margin:0 auto 24px}
         .tasks-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
         .tasks-title{font-size:14px;font-weight:600;color:#64748b}
         .tasks-count{font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(59,130,246,.15);color:#3b82f6;font-weight:600}
-        .tasks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
-        .task-card{background:#1e293b;border:1px solid #2d3a50;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;transition:all .2s}
-        .task-card:hover{border-color:#3b82f6}
-        .task-card.is-max{border-left:3px solid #f97316}
-        .task-name{font-size:13px;font-weight:600;color:#e2e8f0;line-height:1.3}
-        .task-meta{display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:#64748b}
-        .task-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
-        .badge-new{background:rgba(59,130,246,.15);color:#3b82f6}
-        .badge-prog{background:rgba(245,158,11,.15);color:#f59e0b}
-        .badge-max{background:rgba(249,115,22,.15);color:#f97316}
+        .tasks-widgets{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+        .task-widget{background:#1e293b;border:1px solid #2d3a50;border-radius:12px;padding:16px 12px;text-align:center;transition:all .2s}
+        .task-widget:hover{border-color:#3b82f6;transform:translateY(-2px)}
+        .tw-num{font-size:32px;font-weight:800;line-height:1;margin-bottom:4px}
+        .tw-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+        .tw-color-blue .tw-num{color:#3b82f6}
+        .tw-color-green .tw-num{color:#10b981}
+        .tw-color-orange .tw-num{color:#f97316}
+        .tw-color-red .tw-num{color:#ef4444}
+        .tw-color-yellow .tw-num{color:#f59e0b}
+        .tw-color-purple .tw-num{color:#a78bfa}
+        .tw-color-cyan .tw-num{color:#06b6d4}
         .tasks-empty{text-align:center;padding:30px;color:#475569;font-size:12px}
 
         @media(max-width:700px){
@@ -96,6 +98,8 @@
             .day-card.today .day-date{font-size:18px}
             .duty-line{font-size:10px}
             .carousel-nav{width:32px;height:32px;font-size:14px}
+            .tasks-widgets{grid-template-columns:repeat(3,1fr)}
+            .tw-num{font-size:24px}
         }
     </style>
 </head>
@@ -120,14 +124,14 @@
 
 <div class="update-time" id="updateTime"></div>
 
-<!-- Tasks Widget -->
+<!-- Tasks Stats -->
 <div class="tasks-section">
     <div class="tasks-header">
-        <div class="tasks-title">📋 Новые задачи — Техподдержка СЦ</div>
-        <div class="tasks-count" id="tasksCount">0</div>
+        <div class="tasks-title">📋 Задачи — Техподдержка СЦ</div>
+        <div class="tasks-count" id="tasksCount">—</div>
     </div>
-    <div class="tasks-grid" id="tasksGrid">
-        <div class="tasks-empty">⏳ Загрузка задач...</div>
+    <div class="tasks-widgets" id="tasksWidgets">
+        <div class="tasks-empty">⏳ Загрузка...</div>
     </div>
 </div>
 
@@ -223,28 +227,20 @@ function loadTasks(){
     }
     document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⏳ Загрузка задач...</div>';
 
-    var pfBase=cfg.pfUrl||PF_DEFAULT;
-    if(pfBase.charAt(pfBase.length-1)!=='/')pfBase+='/';
-
-    // Сначала пробуем напрямую (если CORS позволяет)
-    var directUrl=pfBase+'task/list';
-    var reqBody=JSON.stringify({
-        page:1,
-        pageSize:100,
-        fields:'id,name,status,assignedTo,contact',
-        filters:[{type:2,operator:'equal',value:'group:6164'}]
-    });
-    var reqHeaders={'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'};
-
-    fetch(directUrl,{
+    fetch(PF_PROXY,{
         method:'POST',
-        headers:reqHeaders,
-        body:reqBody
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            action:'taskList',
+            params:{
+                page:1,
+                pageSize:100,
+                fields:'id,name,status,assignedTo,contact',
+                filters:[{type:2,operator:'equal',value:'group:6164'}]
+            }
+        })
     })
-    .then(function(r){
-        if(!r.ok)throw new Error('HTTP '+r.status);
-        return r.json();
-    })
+    .then(function(r){return r.json()})
     .then(function(d){
         if(d.error)throw new Error(d.error);
         if(d.result==='fail')throw new Error(d.error||'API error');
@@ -252,59 +248,66 @@ function loadTasks(){
         renderTasks();
     })
     .catch(function(e){
-        // CORS ошибка — пробуем через Worker-прокси
-        console.log('Direct failed, trying proxy:',e.message);
-        fetch(PF_PROXY,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
-                url:directUrl,
-                method:'POST',
-                headers:reqHeaders,
-                body:JSON.parse(reqBody)
-            })
-        })
-        .then(function(r){return r.json()})
-        .then(function(d){
-            if(d.error)throw new Error(d.error);
-            if(d.result==='fail')throw new Error(d.error||'API error');
-            allTasks=d.tasks||d||[];
-            renderTasks();
-        })
-        .catch(function(e2){
-            document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">❌ '+esc(e2.message)+'</div>';
-        });
+        document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">❌ '+esc(e.message)+'</div>';
     });
 }
 
 function renderTasks(){
-    var grid=document.getElementById('tasksGrid');
+    var el=document.getElementById('tasksWidgets');
     if(!allTasks.length){
-        grid.innerHTML='<div class="tasks-empty">✅ Нет новых задач</div>';
+        el.innerHTML='<div class="tasks-empty">✅ Нет новых задач</div>';
         document.getElementById('tasksCount').textContent='0';
         return;
     }
 
-    var html='';
+    // Подсчёт статистики
+    var total=allTasks.length;
     var maxCount=0;
+    var regular=0, urgent=0, blocking=0, support=0, internal=0;
+    var noPriority=0;
 
     allTasks.forEach(function(t){
-        var name=t.name||'Без названия';
-        var isMax=name.toUpperCase().indexOf('MAX')===0;
-        if(isMax)maxCount++;
+        var name=(t.name||'').toUpperCase();
+        if(name.indexOf('MAX')===0)maxCount++;
 
-        html+='<div class="task-card'+(isMax?' is-max':'')+'">';
-        html+='<div class="task-name">'+esc(name)+'</div>';
-        html+='<div class="task-meta">';
-        if(isMax)html+='<span class="task-badge badge-max">MAX</span>';
-        html+='<span class="task-badge badge-new">Новая</span>';
-        if(t.deadline)html+='<span>📅 '+t.deadline+'</span>';
-        if(t.contact&&t.contact.name)html+='<span>👤 '+esc(t.contact.name)+'</span>';
-        html+='</div></div>';
+        // Ищем приоритет в customFieldData (ID 1872)
+        var pName='';
+        var cf=t.customFieldData||[];
+        for(var i=0;i<cf.length;i++){
+            var f=cf[i];
+            if(f.field&&f.field.id===1872){
+                var v=f.value;
+                if(v&&typeof v==='object')v=v.value||'';
+                pName=String(v).replace(/[⏳⛔🔥👨🏻‍💻📋\s]/g,'').trim();
+                break;
+            }
+        }
+
+        if(pName.indexOf('Блокирующая')!==-1)blocking++;
+        else if(pName.indexOf('Срочная')!==-1)urgent++;
+        else if(pName.indexOf('Техническая')!==-1||pName.indexOf('поддержка')!==-1)support++;
+        else if(pName.indexOf('Внутренние')!==-1||pName.indexOf('поручения')!==-1)internal++;
+        else if(pName.indexOf('Обычная')!==-1)regular++;
+        else noPriority++;
     });
 
-    grid.innerHTML=html;
-    document.getElementById('tasksCount').textContent=allTasks.length+' (MAX: '+maxCount+')';
+    document.getElementById('tasksCount').textContent=total;
+
+    var html='';
+    html+=ww(total,'Всего','blue');
+    html+=ww(regular,'Обычная','green');
+    html+=ww(urgent,'Срочная','yellow');
+    html+=ww(blocking,'Блокирующая','red');
+    html+=ww(support,'Техподдержка','cyan');
+    html+=ww(internal,'Поручения','purple');
+    html+=ww(maxCount,'MAX','orange');
+    if(noPriority)html+=ww(noPriority,'Без приоритета','blue');
+
+    el.innerHTML=html;
+}
+
+function ww(n,label,color){
+    return '<div class="task-widget tw-color-'+color+'"><div class="tw-num">'+n+'</div><div class="tw-label">'+label+'</div></div>';
 }
 
 function renderCarousel(){
