@@ -146,6 +146,14 @@
             <label>Apps Script URL</label>
             <input type="text" id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec">
         </div>
+        <div class="f">
+            <label>Planfix Token</label>
+            <input type="password" id="cfgPfToken" placeholder="Токен Planfix (Настройки → Доступ к API)">
+        </div>
+        <div class="f">
+            <label>Planfix API URL</label>
+            <input type="text" id="cfgPfUrl" placeholder="https://rokass.planfix.ru/rest/">
+        </div>
         <button class="mbtn p" onclick="saveSettings()">💾 Сохранить</button>
         <button class="mbtn s" onclick="closeSettings()">Закрыть</button>
     </div>
@@ -154,7 +162,8 @@
 <script>
 var DEFAULT_URL='https://script.google.com/macros/s/AKfycby9JoXmATa6_YaXuWSBdmVT2KBpOz-Dp1FWHb1cPoJqrG4-ow2bKfWfXlb3DzTvNnJLQo/exec';
 var PF_PROXY='https://planfix-proxy.tisvros.workers.dev';
-var cfg={url:''};
+var PF_DEFAULT='https://rokass.planfix.ru/rest/';
+var cfg={url:'',pfToken:'',pfUrl:''};
 var cachedData=null;
 var viewOffset=0;
 var lastTodayKey='';
@@ -162,14 +171,19 @@ var allTasks=[];
 
 function openSettings(){
     document.getElementById('cfgUrl').value=cfg.url||'';
+    document.getElementById('cfgPfToken').value=cfg.pfToken||'';
+    document.getElementById('cfgPfUrl').value=cfg.pfUrl||'';
     document.getElementById('settingsModal').classList.add('active');
 }
 function closeSettings(){document.getElementById('settingsModal').classList.remove('active')}
 function saveSettings(){
     cfg.url=document.getElementById('cfgUrl').value.trim();
+    cfg.pfToken=document.getElementById('cfgPfToken').value.trim();
+    cfg.pfUrl=document.getElementById('cfgPfUrl').value.trim();
     localStorage.setItem('duty_cfg',JSON.stringify(cfg));
     closeSettings();
     loadDuty();
+    loadTasks();
 }
 
 var loadIdx=0;
@@ -203,24 +217,30 @@ function setConn(ok){
 
 // === PLANFIX TASKS ===
 function loadTasks(){
+    if(!cfg.pfToken){
+        document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⚙️ Введите токен Planfix в настройках</div>';
+        return;
+    }
     document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⏳ Загрузка задач...</div>';
+
+    var pfUrl=cfg.pfUrl||PF_DEFAULT;
 
     fetch(PF_PROXY,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-            method:'task.getList',
-            params:{
-                fields:'id,name,status,priority,deadline,assignedTo,contact',
-                responsibleGroup:'Техническая поддержка СЦ',
-                status:'Новые'
-            }
+            url:pfUrl,
+            method:'POST',
+            headers:{'Authorization':'Bearer '+cfg.pfToken,'Accept':'application/json'},
+            body:{}
         })
     })
     .then(function(r){return r.json()})
     .then(function(d){
         if(d.error)throw new Error(d.error);
+        if(d.result==='fail')throw new Error(d.error||'API error');
         allTasks=d.tasks||d||[];
+        if(Array.isArray(d)&&d.length===0)allTasks=d;
         renderTasks();
     })
     .catch(function(e){
