@@ -391,10 +391,10 @@ function renderTasks(newTasks,activeTasks,doneTasks){
 
 function ww(n,created,closed,label,color){
     var s='<div class="task-widget tw-color-'+color+'">';
-    if(created)s+='<div class="tw-created">+'+created+'</div>';
+    s+='<div class="tw-created">+'+created+'</div>';
     s+='<div class="tw-num">'+n+'</div>';
     s+='<div class="tw-label">'+label+'</div>';
-    if(closed)s+='<div class="tw-closed">−'+closed+'</div>';
+    s+='<div class="tw-closed">−'+closed+'</div>';
     return s+'</div>';
 }
 
