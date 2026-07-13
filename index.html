@@ -238,14 +238,14 @@ function loadTasks(){
     // Запрос 1: Новые задачи (status=1) — для приоритетов, Трамвая
     var reqNew=JSON.stringify({
         page:1,pageSize:100,
-        fields:'id,name,status,1872,12126,dateTime',
+        fields:'id,name,status,customFields.1872,customFields.12126,dateTime',
         filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'equal',value:1}]
     });
 
     // Запрос 2: Все активные (кроме завершено/отменено) — для выездных
     var reqActive=JSON.stringify({
         page:1,pageSize:100,
-        fields:'id,name,status,12126,dateTime',
+        fields:'id,name,status,customFields.12126,dateTime',
         filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'notequal',value:3},{type:10,operator:'notequal',value:4}]
     });
 
@@ -305,7 +305,11 @@ function renderTasks(newTasks,activeTasks,doneTasks){
     }
 
     var today=new Date();
-    var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    var dd=String(today.getDate()).padStart(2,'0');
+    var mm=String(today.getMonth()+1).padStart(2,'0');
+    var yyyy=today.getFullYear();
+    // Planfix возвращает даты в dd-MM-yyyy
+    var todayStr=dd+'-'+mm+'-'+yyyy;
 
     var total=newTasks.length,totalToday=0;
     var tramvay=0,tramvayToday=0;
@@ -324,7 +328,7 @@ function renderTasks(newTasks,activeTasks,doneTasks){
         if(isToday)totalToday++;
 
         var name=(t.name||'').toUpperCase();
-        var isTramvay=name.indexOf('MAX')===0||name.indexOf('ТРАМВАЙ')===0;
+        var isTramvay=name.indexOf('MAX')===0||name.indexOf('МАХ')===0||name.indexOf('ТРАМВАЙ')===0;
         if(isTramvay){tramvay++;if(isToday)tramvayToday++;}
 
         var cf=t.customFieldData||[];
