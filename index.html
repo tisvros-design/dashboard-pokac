@@ -234,7 +234,10 @@ function loadTasks(){
         page:1,
         pageSize:100,
         fields:'id,name,status,assignedTo,contact,project,priority,customFieldData,description,author,deadline',
-        filters:[{type:2,operator:'equal',value:'group:6164'}]
+        filters:[
+            {type:2,operator:'equal',value:'group:6164'},
+            {type:10,operator:'equal',value:1}
+        ]
     });
     var reqHeaders={'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'};
 
