@@ -226,22 +226,25 @@ function loadTasks(){
     var pfBase=cfg.pfUrl||PF_DEFAULT;
     if(pfBase.charAt(pfBase.length-1)!=='/')pfBase+='/';
 
-    fetch(PF_PROXY,{
+    // Сначала пробуем напрямую (если CORS позволяет)
+    var directUrl=pfBase+'task/list';
+    var reqBody=JSON.stringify({
+        page:1,
+        pageSize:100,
+        fields:'id,name,status,assignedTo,contact',
+        filters:[{type:2,operator:'equal',value:'group:6164'}]
+    });
+    var reqHeaders={'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'};
+
+    fetch(directUrl,{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            url:pfBase+'task/list',
-            method:'POST',
-            headers:{'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'},
-            body:{
-                page:1,
-                pageSize:100,
-                fields:'id,name,status,assignedTo,contact',
-                filters:[{type:2,operator:'equal',value:'group:6164'}]
-            }
-        })
+        headers:reqHeaders,
+        body:reqBody
     })
-    .then(function(r){return r.json()})
+    .then(function(r){
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        return r.json();
+    })
     .then(function(d){
         if(d.error)throw new Error(d.error);
         if(d.result==='fail')throw new Error(d.error||'API error');
@@ -249,7 +252,28 @@ function loadTasks(){
         renderTasks();
     })
     .catch(function(e){
-        document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">❌ '+esc(e.message)+'</div>';
+        // CORS ошибка — пробуем через Worker-прокси
+        console.log('Direct failed, trying proxy:',e.message);
+        fetch(PF_PROXY,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                url:directUrl,
+                method:'POST',
+                headers:reqHeaders,
+                body:JSON.parse(reqBody)
+            })
+        })
+        .then(function(r){return r.json()})
+        .then(function(d){
+            if(d.error)throw new Error(d.error);
+            if(d.result==='fail')throw new Error(d.error||'API error');
+            allTasks=d.tasks||d||[];
+            renderTasks();
+        })
+        .catch(function(e2){
+            document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">❌ '+esc(e2.message)+'</div>';
+        });
     });
 }
 
