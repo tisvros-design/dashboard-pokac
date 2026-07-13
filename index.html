@@ -73,6 +73,23 @@
         .loading{text-align:center;padding:40px;color:#64748b}
         .update-time{text-align:center;margin-top:24px;font-size:11px;color:#475569}
 
+        /* Tasks Widget */
+        .tasks-section{max-width:1200px;margin:0 auto 24px}
+        .tasks-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .tasks-title{font-size:14px;font-weight:600;color:#64748b}
+        .tasks-count{font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(59,130,246,.15);color:#3b82f6;font-weight:600}
+        .tasks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+        .task-card{background:#1e293b;border:1px solid #2d3a50;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;transition:all .2s}
+        .task-card:hover{border-color:#3b82f6}
+        .task-card.is-max{border-left:3px solid #f97316}
+        .task-name{font-size:13px;font-weight:600;color:#e2e8f0;line-height:1.3}
+        .task-meta{display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:#64748b}
+        .task-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+        .badge-new{background:rgba(59,130,246,.15);color:#3b82f6}
+        .badge-prog{background:rgba(245,158,11,.15);color:#f59e0b}
+        .badge-max{background:rgba(249,115,22,.15);color:#f97316}
+        .tasks-empty{text-align:center;padding:30px;color:#475569;font-size:12px}
+
         @media(max-width:700px){
             .day-card{padding:10px 6px}
             .day-date{font-size:14px}
@@ -103,6 +120,17 @@
 
 <div class="update-time" id="updateTime"></div>
 
+<!-- Tasks Widget -->
+<div class="tasks-section">
+    <div class="tasks-header">
+        <div class="tasks-title">📋 Новые задачи — Техподдержка СЦ</div>
+        <div class="tasks-count" id="tasksCount">0</div>
+    </div>
+    <div class="tasks-grid" id="tasksGrid">
+        <div class="tasks-empty">⏳ Загрузка задач...</div>
+    </div>
+</div>
+
 <div class="modal-bg" id="statsModal" onclick="if(event.target===this)this.classList.remove('active')">
     <div class="modal">
         <h2>📊 Статистика дежурств — 
@@ -125,10 +153,12 @@
 
 <script>
 var DEFAULT_URL='https://script.google.com/macros/s/AKfycby9JoXmATa6_YaXuWSBdmVT2KBpOz-Dp1FWHb1cPoJqrG4-ow2bKfWfXlb3DzTvNnJLQo/exec';
+var PF_PROXY='https://planfix-proxy.tisvros.workers.dev';
 var cfg={url:''};
 var cachedData=null;
 var viewOffset=0;
 var lastTodayKey='';
+var allTasks=[];
 
 function openSettings(){
     document.getElementById('cfgUrl').value=cfg.url||'';
@@ -169,6 +199,63 @@ function setConn(ok){
     var el=document.getElementById('connStatus');
     if(ok){el.className='conn ok';el.textContent='● Подключено'}
     else{el.className='conn off';el.textContent='○ Отключено'}
+}
+
+// === PLANFIX TASKS ===
+function loadTasks(){
+    document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⏳ Загрузка задач...</div>';
+
+    fetch(PF_PROXY,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            method:'task.getList',
+            params:{
+                fields:'id,name,status,priority,deadline,assignedTo,contact',
+                responsibleGroup:'Техническая поддержка СЦ',
+                status:'Новые'
+            }
+        })
+    })
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if(d.error)throw new Error(d.error);
+        allTasks=d.tasks||d||[];
+        renderTasks();
+    })
+    .catch(function(e){
+        document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">❌ '+esc(e.message)+'</div>';
+    });
+}
+
+function renderTasks(){
+    var grid=document.getElementById('tasksGrid');
+    if(!allTasks.length){
+        grid.innerHTML='<div class="tasks-empty">✅ Нет новых задач</div>';
+        document.getElementById('tasksCount').textContent='0';
+        return;
+    }
+
+    var html='';
+    var maxCount=0;
+
+    allTasks.forEach(function(t){
+        var name=t.name||'Без названия';
+        var isMax=name.toUpperCase().indexOf('MAX')===0;
+        if(isMax)maxCount++;
+
+        html+='<div class="task-card'+(isMax?' is-max':'')+'">';
+        html+='<div class="task-name">'+esc(name)+'</div>';
+        html+='<div class="task-meta">';
+        if(isMax)html+='<span class="task-badge badge-max">MAX</span>';
+        html+='<span class="task-badge badge-new">Новая</span>';
+        if(t.deadline)html+='<span>📅 '+t.deadline+'</span>';
+        if(t.contact&&t.contact.name)html+='<span>👤 '+esc(t.contact.name)+'</span>';
+        html+='</div></div>';
+    });
+
+    grid.innerHTML=html;
+    document.getElementById('tasksCount').textContent=allTasks.length+' (MAX: '+maxCount+')';
 }
 
 function renderCarousel(){
@@ -271,7 +358,9 @@ function openStats(){
     try{cfg=JSON.parse(localStorage.getItem('duty_cfg')||'{}')}catch(e){}
     if(!cfg.url)cfg.url='';
     loadDuty();
+    loadTasks();
     setInterval(loadDuty,60000);
+    setInterval(loadTasks,300000); // обновление задач каждые 5 минут
 })();
 </script>
 </body>
