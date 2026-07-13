@@ -223,16 +223,22 @@ function loadTasks(){
     }
     document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⏳ Загрузка задач...</div>';
 
-    var pfUrl=cfg.pfUrl||PF_DEFAULT;
+    var pfBase=cfg.pfUrl||PF_DEFAULT;
+    if(pfBase.charAt(pfBase.length-1)!=='/')pfBase+='/';
 
     fetch(PF_PROXY,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-            url:pfUrl,
+            url:pfBase+'task/list',
             method:'POST',
-            headers:{'Authorization':'Bearer '+cfg.pfToken,'Accept':'application/json'},
-            body:{}
+            headers:{'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'},
+            body:{
+                page:1,
+                pageSize:100,
+                fields:'id,name,status,assignedTo,contact',
+                filters:[{type:2,operator:'equal',value:'group:6164'}]
+            }
         })
     })
     .then(function(r){return r.json()})
@@ -240,7 +246,6 @@ function loadTasks(){
         if(d.error)throw new Error(d.error);
         if(d.result==='fail')throw new Error(d.error||'API error');
         allTasks=d.tasks||d||[];
-        if(Array.isArray(d)&&d.length===0)allTasks=d;
         renderTasks();
     })
     .catch(function(e){
