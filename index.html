@@ -233,7 +233,7 @@ function loadTasks(){
     var reqBody=JSON.stringify({
         page:1,
         pageSize:100,
-        fields:'id,name,status,assignedTo,contact,project,priority,customFieldData,description,author,deadline',
+        fields:'id,name,status,1872,12126,1784',
         filters:[
             {type:2,operator:'equal',value:'group:6164'},
             {type:10,operator:'equal',value:1}
@@ -278,28 +278,41 @@ function renderTasks(){
         return;
     }
 
-    // Подсчёт статистики
     var total=allTasks.length;
-    var maxCount=0;
+    var tramvay=0;
     var regular=0, urgent=0, blocking=0, support=0, internal=0;
     var noPriority=0;
+    var onsite=0;
 
     allTasks.forEach(function(t){
         var name=(t.name||'').toUpperCase();
-        if(name.indexOf('MAX')===0||name.indexOf('ТРАМВАЙ')===0)maxCount++;
+        if(name.indexOf('MAX')===0||name.indexOf('ТРАМВАЙ')===0)tramvay++;
 
-        // Ищем приоритет в customFieldData (ID 1872)
-        var pName='';
+        // customFieldData — массив полей
         var cf=t.customFieldData||[];
+        var pName='';
+        var hasAddress=false;
+
         for(var i=0;i<cf.length;i++){
             var f=cf[i];
-            if(f.field&&f.field.id===1872){
+            var fid=f.field?f.field.id:f.id;
+
+            // Поле 1872 — Приоритет
+            if(fid===1872){
                 var v=f.value;
                 if(v&&typeof v==='object')v=v.value||'';
-                pName=String(v).replace(/[⏳⛔🔥👨🏻‍💻📋\s]/g,'').trim();
-                break;
+                pName=String(v).replace(/[⏳⛔🔥👨🏻‍💻📋\u{1F4CB}]/gu,'').replace(/\s+/g,' ').trim();
+            }
+
+            // Поле 12126 — Адрес выезда
+            if(fid===12126){
+                var av=f.value;
+                if(av&&typeof av==='object')av=av.value||'';
+                if(av&&String(av).trim())hasAddress=true;
             }
         }
+
+        if(hasAddress)onsite++;
 
         if(pName.indexOf('Блокирующая')!==-1)blocking++;
         else if(pName.indexOf('Срочная')!==-1)urgent++;
@@ -312,13 +325,14 @@ function renderTasks(){
     document.getElementById('tasksCount').textContent=total;
 
     var html='';
-    html+=ww(total,'Всего','blue');
+    html+=ww(total,'Новых','blue');
     html+=ww(regular,'Обычная','green');
     html+=ww(urgent,'Срочная','yellow');
     html+=ww(blocking,'Блокирующая','red');
     html+=ww(support,'Техподдержка','cyan');
     html+=ww(internal,'Поручения','purple');
-    html+=ww(maxCount,'🚃 ТРАМВАЙ','orange');
+    html+=ww(tramvay,'Трамвай','orange');
+    html+=ww(onsite,'Выездные','green');
     if(noPriority)html+=ww(noPriority,'Без приоритета','blue');
 
     el.innerHTML=html;
