@@ -252,7 +252,7 @@ function loadTasks(){
     // Запрос 3: Завершённые (status=3) — для счётчика "закрыто сегодня"
     var reqDone=JSON.stringify({
         page:1,pageSize:100,
-        fields:'id,name,status,dateTime',
+        fields:'id,name,status,dateTime,actualCompletionDate',
         filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'equal',value:3}]
     });
 
@@ -369,7 +369,15 @@ function renderTasks(newTasks,activeTasks,doneTasks){
     var doneToday=0;
     (doneTasks||[]).forEach(function(t){
         var dt='';
-        if(t.dateTime){var d=t.dateTime;dt=typeof d==='object'?d.date||d.datetime||'':String(d);}
+        // Приоритет: actualCompletionDate > dateTime
+        if(t.actualCompletionDate){
+            var ac=t.actualCompletionDate;
+            dt=typeof ac==='object'?ac.date||ac.datetime||'':String(ac);
+        }
+        if(!dt&&t.dateTime){
+            var d=t.dateTime;
+            dt=typeof d==='object'?d.date||d.datetime||'':String(d);
+        }
         if(dt.indexOf(todayStr)===0)doneToday++;
     });
 
