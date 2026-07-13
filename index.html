@@ -7,155 +7,131 @@
     <title>Dashboard POKAC</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--bg:#0f172a;--card:#1e293b;--border:#2d3a50;--accent:#3b82f6;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--orange:#f97316;--text:#e2e8f0;--muted:#64748b;--dim:#334155}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0f1a;color:#e2e8f0;min-height:100vh;padding:16px}
 
-        .header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-        .header h1{font-size:17px;font-weight:700;color:var(--accent)}
-        .hdr-btn{background:var(--dim);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:11px;cursor:pointer}
-        .hdr-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .header h1{font-size:20px;font-weight:700;color:#3b82f6}
+        .hdr-right{display:flex;gap:8px;align-items:center}
+        .hdr-btn{background:#1e293b;border:1px solid #2d3a50;border-radius:8px;padding:6px 12px;color:#94a3b8;font-size:12px;cursor:pointer}
+        .hdr-btn:hover{border-color:#3b82f6;color:#3b82f6}
+        .conn{font-size:10px;padding:3px 8px;border-radius:10px}
+        .conn.ok{background:rgba(16,185,129,.15);color:#10b981}
+        .conn.off{background:rgba(100,116,139,.15);color:#64748b}
 
-        .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
-        .tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
-        .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+        /* Today Info */
+        .today-info{background:linear-gradient(135deg,#1e3a5f 0%,#1e293b 100%);border:2px solid #3b82f6;border-radius:16px;padding:20px;margin-bottom:20px;text-align:center}
+        .today-date{font-size:16px;font-weight:700;color:#3b82f6;margin-bottom:4px}
+        .today-month{font-size:13px;color:#64748b;margin-bottom:16px}
+        .today-grid{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+        .today-item{text-align:center}
+        .today-label{font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:6px}
+        .today-people{font-size:15px;font-weight:600}
+        .today-people.day-color{color:#60a5fa}
+        .today-people.evening-color{color:#fb923c}
+        .today-people.weekend-color{color:#34d399}
 
-        .content{padding:12px}
-        .section{display:none}
-        .section.active{display:block}
-
-        /* Today Card */
-        .today-box{background:linear-gradient(135deg,#1e3a5f 0%,#1e293b 100%);border:2px solid var(--accent);border-radius:12px;padding:16px;margin-bottom:16px}
-        .today-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:4px}
-        .today-date{font-size:12px;color:var(--muted);margin-bottom:12px}
-        .today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-        .today-card{background:rgba(0,0,0,.3);border-radius:8px;padding:10px;text-align:center}
-        .today-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-        .today-value{font-size:14px;font-weight:700;margin-top:4px}
-        .today-day{color:#60a5fa}
-        .today-evening{color:#fb923c}
-        .today-weekend{color:var(--green)}
+        /* Week Cards */
+        .week-title{font-size:14px;font-weight:600;color:#64748b;margin-bottom:12px}
+        .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:24px}
+        
+        .day-card{background:#1e293b;border:2px solid #2d3a50;border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s}
+        .day-card:hover{transform:translateY(-2px);border-color:#3b82f6}
+        .day-card.today{border-color:#10b981;background:linear-gradient(135deg,#064e3b 0%,#1e293b 100%);box-shadow:0 0 20px rgba(16,185,129,.2)}
+        .day-card.weekend-card{opacity:.7}
+        
+        .day-name{font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:4px}
+        .day-num{font-size:22px;font-weight:800;color:#e2e8f0;margin-bottom:10px}
+        .day-card.today .day-num{color:#10b981}
+        
+        .duty-person{display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:600;margin-bottom:4px}
+        .duty-icon{font-size:14px}
+        .duty-name.day{color:#60a5fa}
+        .duty-name.evening{color:#fb923c}
+        .duty-name.weekend{color:#34d399}
+        .duty-name.vacation{color:#a78bfa}
 
         /* Schedule Table */
-        .schedule-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;overflow-x:auto}
-        .schedule-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted)}
+        .sched-section{background:#1e293b;border:1px solid #2d3a50;border-radius:12px;padding:16px;overflow-x:auto;margin-bottom:20px}
+        .sched-title{font-size:14px;font-weight:600;color:#64748b;margin-bottom:12px}
         .sched{width:100%;border-collapse:collapse;font-size:11px}
-        .sched th,.sched td{padding:5px 4px;text-align:center;border:1px solid var(--border);min-width:28px}
-        .sched th{background:var(--dim);font-weight:600;color:var(--muted);position:sticky;top:0}
-        .sched td.name{text-align:left;font-weight:600;min-width:80px;background:rgba(0,0,0,.2);white-space:nowrap}
-        .sched td.today-col{background:rgba(59,130,246,.15);font-weight:700}
+        .sched th,.sched td{padding:6px 5px;text-align:center;border:1px solid #2d3a50;min-width:30px}
+        .sched th{background:#0f172a;font-weight:600;color:#64748b}
+        .sched td.name{text-align:left;font-weight:600;min-width:90px;background:rgba(0,0,0,.2);white-space:nowrap}
+        .sched td.today-col{background:rgba(59,130,246,.1);font-weight:700}
         .c1{background:#1d4ed8;color:#fff;font-weight:700}
         .c2{background:#c2410c;color:#fff;font-weight:700}
         .cv{background:#166534;color:#fff;font-weight:700}
         .co{background:#7c3aed;color:#fff;font-weight:700}
-        .legend{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
+        .legend{margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#64748b}
         .legend span{display:flex;align-items:center;gap:4px}
-        .legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
+        .legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
 
-        /* Tasks */
-        .task-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
-        .task-card .t-name{font-size:14px;font-weight:600;margin-bottom:4px}
-        .task-card .t-meta{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
-        .task-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
-        .b-new{background:rgba(59,130,246,.15);color:var(--accent)}
-        .b-prog{background:rgba(245,158,11,.15);color:var(--yellow)}
-        .b-done{background:rgba(16,185,129,.15);color:var(--green)}
-
-        .search{width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;margin-bottom:12px}
-        .search:focus{outline:none;border-color:var(--accent)}
-
-        .filter-bar{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
-        .filter-chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap}
-        .filter-chip.active{background:var(--accent);color:white;border-color:var(--accent)}
-
-        .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
-
-        /* Settings */
-        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;justify-content:center;align-items:center}
+        /* Settings Modal */
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center}
         .modal-bg.active{display:flex}
-        .modal{background:var(--card);border-radius:12px;padding:20px;width:400px;max-width:95vw}
-        .modal h2{font-size:16px;margin-bottom:14px;color:var(--accent)}
-        .modal .f{margin-bottom:12px}
-        .modal label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
-        .modal input{width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px}
-        .modal input:focus{outline:none;border-color:var(--accent)}
-        .mbtn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
-        .mbtn.p{background:var(--accent);color:white}
-        .mbtn.s{background:var(--dim);color:var(--text)}
+        .modal{background:#1e293b;border-radius:12px;padding:24px;width:420px;max-width:95vw;border:1px solid #2d3a50}
+        .modal h2{font-size:16px;margin-bottom:16px;color:#3b82f6}
+        .modal .f{margin-bottom:14px}
+        .modal label{display:block;font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:4px}
+        .modal input{width:100%;padding:10px;background:#0f172a;border:1px solid #2d3a50;border-radius:6px;color:#e2e8f0;font-size:13px}
+        .modal input:focus{outline:none;border-color:#3b82f6}
+        .modal .hint{font-size:10px;color:#64748b;margin-top:4px}
+        .mbtn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+        .mbtn.p{background:#3b82f6;color:white}
+        .mbtn.s{background:#334155;color:#e2e8f0}
 
-        .stats-row{display:flex;gap:8px;margin-bottom:12px}
-        .stat-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
-        .stat-box .v{font-size:22px;font-weight:800}
-        .stat-box .l{font-size:10px;color:var(--muted);text-transform:uppercase}
-        .stat-box.blue .v{color:var(--accent)}
-        .stat-box.green .v{color:var(--green)}
-        .stat-box.yellow .v{color:var(--yellow)}
-        .stat-box.red .v{color:var(--red)}
+        .empty{text-align:center;padding:40px;color:#64748b;font-size:13px}
+        .loading{text-align:center;padding:30px;color:#64748b}
 
-        .conn{font-size:10px;padding:2px 6px;border-radius:8px}
-        .conn.ok{background:rgba(16,185,129,.15);color:var(--green)}
-        .conn.off{background:rgba(100,116,139,.15);color:var(--muted)}
+        @media(max-width:900px){
+            .week-grid{grid-template-columns:repeat(4,1fr)}
+            .today-grid{gap:16px}
+        }
+        @media(max-width:600px){
+            .week-grid{grid-template-columns:repeat(3,1fr)}
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1>🏢 Dashboard POKAC</h1>
-    <div style="display:flex;gap:6px;align-items:center">
+    <div class="hdr-right">
         <span class="conn off" id="connStatus">—</span>
-        <button class="hdr-btn" onclick="openSettings()">⚙️</button>
+        <button class="hdr-btn" onclick="openSettings()">⚙️ Настройки</button>
     </div>
 </div>
 
-<div class="tabs">
-    <div class="tab active" onclick="switchTab('duty')">📅 Дежурные</div>
-    <div class="tab" onclick="switchTab('tasks')">📋 Задачи</div>
+<!-- Сегодня -->
+<div class="today-info">
+    <div class="today-date" id="todayDate">—</div>
+    <div class="today-month" id="todayMonth">Загрузка...</div>
+    <div class="today-grid">
+        <div class="today-item">
+            <div class="today-label">☀️ Дневное дежурство</div>
+            <div class="today-people day-color" id="todayDay">—</div>
+        </div>
+        <div class="today-item">
+            <div class="today-label">🌙 Вечернее дежурство</div>
+            <div class="today-people evening-color" id="todayEvening">—</div>
+        </div>
+        <div class="today-item">
+            <div class="today-label">⛱ Выходной</div>
+            <div class="today-people weekend-color" id="todayWeekend">—</div>
+        </div>
+    </div>
 </div>
 
-<div class="content">
-    <!-- Duty -->
-    <div class="section active" id="secDuty">
-        <div id="todayBox" class="today-box">
-            <div class="today-title">📅 Сегодня</div>
-            <div class="today-date" id="todayDate">Загрузка...</div>
-            <div class="today-grid">
-                <div class="today-card">
-                    <div class="today-label">☀️ Дневное</div>
-                    <div class="today-value today-day" id="todayDay">—</div>
-                </div>
-                <div class="today-card">
-                    <div class="today-label">🌙 Вечернее</div>
-                    <div class="today-value today-evening" id="todayEvening">—</div>
-                </div>
-                <div class="today-card">
-                    <div class="today-label">🏖️ Выходной</div>
-                    <div class="today-value today-weekend" id="todayWeekend">—</div>
-                </div>
-            </div>
-        </div>
-        <div class="schedule-wrap">
-            <div class="schedule-title">📋 График дежурств</div>
-            <div id="schedLoading" class="empty">⏳ Загрузка...</div>
-            <div id="schedTable"></div>
-        </div>
-    </div>
+<!-- Неделя -->
+<div class="week-title" id="weekTitle">📅 Текущая неделя</div>
+<div class="week-grid" id="weekGrid">
+    <div class="loading">⏳ Загрузка графика...</div>
+</div>
 
-    <!-- Tasks -->
-    <div class="section" id="secTasks">
-        <div class="stats-row">
-            <div class="stat-box blue"><div class="v" id="taskAll">0</div><div class="l">Всего</div></div>
-            <div class="stat-box yellow"><div class="v" id="taskActive">0</div><div class="l">В работе</div></div>
-            <div class="stat-box green"><div class="v" id="taskDone">0</div><div class="l">Выполнено</div></div>
-            <div class="stat-box red"><div class="v" id="taskOverdue">0</div><div class="l">Просрочено</div></div>
-        </div>
-        <input type="search" class="search" placeholder="🔍 Поиск задач..." id="taskSearch" oninput="filterTasks()">
-        <div class="filter-bar">
-            <div class="filter-chip active" onclick="setFilter('all',this)">Все</div>
-            <div class="filter-chip" onclick="setFilter('new',this)">Новые</div>
-            <div class="filter-chip" onclick="setFilter('progress',this)">В работе</div>
-            <div class="filter-chip" onclick="setFilter('done',this)">Выполнено</div>
-        </div>
-        <div id="taskList"></div>
-    </div>
+<!-- Таблица -->
+<div class="sched-section">
+    <div class="sched-title">📋 Полный график на месяц</div>
+    <div id="schedTable"></div>
 </div>
 
 <!-- Settings Modal -->
@@ -163,17 +139,9 @@
     <div class="modal">
         <h2>⚙️ Настройки</h2>
         <div class="f">
-            <label>Apps Script URL (дежурства)</label>
-            <input type="text" id="cfgAppsScript" placeholder="https://script.google.com/macros/s/.../exec">
-            <div style="font-size:10px;color:var(--muted);margin-top:4px">Ссылка на веб-приложение Apps Script</div>
-        </div>
-        <div class="f">
-            <label>Домен Planfix</label>
-            <input type="text" id="cfgDomain" placeholder="mycompany.planfix.com">
-        </div>
-        <div class="f">
-            <label>API токен Planfix</label>
-            <input type="password" id="cfgToken" placeholder="API токен">
+            <label>Apps Script URL</label>
+            <input type="text" id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec">
+            <div class="hint">URL веб-приложения из Google Apps Script (тот что в Planfix)</div>
         </div>
         <button class="mbtn p" onclick="saveSettings()">💾 Сохранить</button>
         <button class="mbtn s" onclick="closeSettings()">Закрыть</button>
@@ -181,87 +149,138 @@
 </div>
 
 <script>
-let cfg={appsScript:'',domain:'',token:''};
-let allTasks=[];
-let currentFilter='all';
+let cfg={url:''};
+let cachedData=null;
 
-// ===== SETTINGS =====
+// === SETTINGS ===
 function openSettings(){
-    document.getElementById('cfgAppsScript').value=cfg.appsScript||'';
-    document.getElementById('cfgDomain').value=(cfg.domain||'').replace('https://','');
-    document.getElementById('cfgToken').value=cfg.token||'';
+    document.getElementById('cfgUrl').value=cfg.url||'';
     document.getElementById('settingsModal').classList.add('active');
 }
 function closeSettings(){document.getElementById('settingsModal').classList.remove('active')}
-
 function saveSettings(){
-    cfg.appsScript=document.getElementById('cfgAppsScript').value.trim();
-    cfg.domain=document.getElementById('cfgDomain').value.trim();
-    cfg.token=document.getElementById('cfgToken').value.trim();
-    if(cfg.domain&&!cfg.domain.includes('.'))cfg.domain+='.planfix.com';
-    if(cfg.domain&&!cfg.domain.startsWith('http'))cfg.domain='https://'+cfg.domain;
-    localStorage.setItem('dash_cfg',JSON.stringify(cfg));
+    cfg.url=document.getElementById('cfgUrl').value.trim();
+    localStorage.setItem('duty_cfg',JSON.stringify(cfg));
     closeSettings();
-    showToast('Настройки сохранены');
-    loadData();
-}
-
-// ===== LOAD DATA =====
-function loadData(){
     loadDuty();
-    if(cfg.token)loadPlanfix();
 }
 
-// ===== DUTY via JSONP =====
-let jsonpCounter=0;
+// === JSONP LOAD ===
+let cbIdx=0;
 function loadDuty(){
-    if(!cfg.appsScript){
-        document.getElementById('schedLoading').innerHTML='⚠️ URL не настроен. Нажмите ⚙️';
+    if(!cfg.url){
+        document.getElementById('weekGrid').innerHTML='<div class="empty">⚠️ URL не настроен. Нажмите ⚙️ Настройки</div>';
         return;
     }
     
-    const cbName='_dutyCb'+(++jsonpCounter);
+    document.getElementById('weekGrid').innerHTML='<div class="loading">⏳ Загрузка...</div>';
+    
+    const cbName='_cb'+(++cbIdx);
     window[cbName]=function(data){
         delete window[cbName];
-        const s=document.getElementById('jsonp-'+cbName);
-        if(s)s.remove();
+        const el=document.getElementById('jp'+cbName);
+        if(el)el.remove();
+        
         if(data.error){
-            document.getElementById('schedLoading').innerHTML='❌ '+esc(data.error);
+            document.getElementById('weekGrid').innerHTML='<div class="empty">❌ '+esc(data.error)+'</div>';
+            setConn(false);
             return;
         }
-        document.getElementById('schedLoading').style.display='none';
-        renderDuty(data);
-        updateConnStatus(true);
+        
+        cachedData=data;
+        setConn(true);
+        renderAll(data);
     };
     
-    const script=document.createElement('script');
-    script.id='jsonp-'+cbName;
-    script.src=cfg.appsScript+'?mode=jsonp&callback='+cbName;
-    script.onerror=function(){
-        document.getElementById('schedLoading').innerHTML='❌ Ошибка загрузки. Проверьте URL.';
-        updateConnStatus(false);
+    const s=document.createElement('script');
+    s.id='jp'+cbName;
+    s.src=cfg.url+'?mode=jsonp&callback='+cbName;
+    s.onerror=function(){
+        document.getElementById('weekGrid').innerHTML='<div class="empty">❌ Ошибка загрузки. Проверьте URL.</div>';
+        setConn(false);
     };
-    document.body.appendChild(script);
+    document.body.appendChild(s);
 }
 
-function updateConnStatus(ok){
+function setConn(ok){
     const el=document.getElementById('connStatus');
-    if(ok){el.className='conn ok';el.textContent='OK'}
-    else{el.className='conn off';el.textContent='—'}
+    if(ok){el.className='conn ok';el.textContent='● Подключено'}
+    else{el.className='conn off';el.textContent='○ Отключено'}
 }
 
-function renderDuty(data){
-    // Today
-    if(data.today){
-        document.getElementById('todayDay').textContent=(data.today.day||[]).join(', ')||'—';
-        document.getElementById('todayEvening').textContent=(data.today.evening||[]).join(', ')||'—';
-        document.getElementById('todayWeekend').textContent=(data.today.weekend||[]).join(', ')||'—';
-    }
+// === RENDER ===
+function renderAll(data){
+    // Сегодня
     if(data.date){
-        document.getElementById('todayDate').textContent=data.date.dateRu+' ('+data.date.dayOfWeek+'), '+data.month;
+        const d=data.date;
+        document.getElementById('todayDate').textContent=d.dateRu+' ('+d.dayOfWeek.toUpperCase()+')';
+        document.getElementById('todayMonth').textContent=data.month;
+    }
+    if(data.today){
+        document.getElementById('todayDay').textContent=(data.today.day||[]).join(', ')||'Нет';
+        document.getElementById('todayEvening').textContent=(data.today.evening||[]).join(', ')||'Нет';
+        document.getElementById('todayWeekend').textContent=(data.today.weekend||[]).join(', ')||'Нет';
     }
     
-    // Table
+    // Карточки недели
+    if(data.employees&&data.date){
+        renderWeekCards(data);
+        renderScheduleTable(data);
+    }
+}
+
+function renderWeekCards(data){
+    const today=data.date.day;
+    const year=data.date.year;
+    const month=data.date.month;
+    
+    // Определяем текущую неделю (пн-вс)
+    const todayDate=new Date(year,month-1,today);
+    const dayOfWeek=todayDate.getDay();
+    const mondayOffset=dayOfWeek===0?-6:1-dayOfWeek;
+    const monday=new Date(todayDate);
+    monday.setDate(todayDate.getDate()+mondayOffset);
+    
+    let html='';
+    const dayNames=['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+    
+    for(let i=0;i<7;i++){
+        const d=new Date(monday);
+        d.setDate(monday.getDate()+i);
+        const dayNum=d.getDate();
+        const isToday=dayNum===today&&d.getMonth()===month-1;
+        const isWeekend=i>=5;
+        
+        // Ищем кто на дежурстве
+        let dayP=[],eveningP=[],weekendP=[];
+        data.employees.forEach(emp=>{
+            const v=emp.duties[dayNum];
+            if(v==='day')dayP.push(emp.name);
+            else if(v==='evening')eveningP.push(emp.name);
+            else if(v==='weekend')weekendP.push(emp.name);
+        });
+        
+        const dateStr=dayNum+'.'+String(d.getMonth()+1).padStart(2,'0');
+        
+        html+=`<div class="day-card${isToday?' today':''}${isWeekend?' weekend-card':''}">
+            <div class="day-name">${dayNames[i]}</div>
+            <div class="day-num">${dateStr}</div>
+            ${dayP.length?`<div class="duty-person"><span class="duty-icon">☀️</span><span class="duty-name day">${esc(dayP.join(', '))}</span></div>`:''}
+            ${eveningP.length?`<div class="duty-person"><span class="duty-icon">🌙</span><span class="duty-name evening">${esc(eveningP.join(', '))}</span></div>`:''}
+            ${weekendP.length?`<div class="duty-person"><span class="duty-icon">⛱</span><span class="duty-name weekend">${esc(weekendP.join(', '))}</span></div>`:''}
+            ${!dayP.length&&!eveningP.length&&!weekendP.length?'<div class="duty-person" style="color:#475569">—</div>':''}
+        </div>`;
+    }
+    
+    document.getElementById('weekGrid').innerHTML=html;
+    
+    // Заголовок недели
+    const sunday=new Date(monday);
+    sunday.setDate(monday.getDate()+6);
+    document.getElementById('weekTitle').textContent='📅 '+monday.getDate()+'.'+String(monday.getMonth()+1).padStart(2,'0')+' — '+sunday.getDate()+'.'+String(sunday.getMonth()+1).padStart(2,'0');
+}
+
+function renderScheduleTable(data){
     if(!data.employees||!data.employees.length){
         document.getElementById('schedTable').innerHTML='<div class="empty">Нет данных</div>';
         return;
@@ -274,7 +293,7 @@ function renderDuty(data){
     
     let h='<table class="sched"><tr><th>ФИО</th>';
     days.forEach(d=>{
-        h+='<th'+(d===todayDay?' style="background:var(--accent);color:#fff"':'')+'>'+d+'</th>';
+        h+='<th'+(d===todayDay?' style="background:#3b82f6;color:#fff"':'')+'>'+d+'</th>';
     });
     h+='</tr>';
     
@@ -303,101 +322,14 @@ function renderDuty(data){
     document.getElementById('schedTable').innerHTML=h;
 }
 
-// ===== TASKS =====
-async function loadPlanfix(){
-    if(!cfg.domain||!cfg.token)return;
-    try{
-        const r=await fetch(cfg.domain+'/api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:new URLSearchParams({method:'task.getList',access_token:cfg.token,fields:'id,name,status,priority,deadline,assignedTo'}).toString()});
-        const d=await r.json();
-        if(d.status==='error')return;
-        allTasks=d.tasks||d||[];
-        updateTaskStats();filterTasks();
-    }catch(e){}
-}
-
-function updateTaskStats(){
-    const now=new Date();
-    let active=0,done=0,overdue=0;
-    allTasks.forEach(t=>{
-        const s=(t.status?.name||'').toLowerCase();
-        if(s.includes('работ')||s.includes('progress'))active++;
-        if(s.includes('выполн')||s.includes('done')||s.includes('заверш'))done++;
-        if(t.deadline&&new Date(t.deadline)<now&&!s.includes('выполн')&&!s.includes('done'))overdue++;
-    });
-    document.getElementById('taskAll').textContent=allTasks.length;
-    document.getElementById('taskActive').textContent=active;
-    document.getElementById('taskDone').textContent=done;
-    document.getElementById('taskOverdue').textContent=overdue;
-}
-
-function filterTasks(){
-    const q=(document.getElementById('taskSearch').value||'').toLowerCase();
-    const now=new Date();
-    const filtered=allTasks.filter(t=>{
-        if(q&&!t.name?.toLowerCase().includes(q)&&!(t.assignedTo?.name||'').toLowerCase().includes(q))return false;
-        const s=(t.status?.name||'').toLowerCase();
-        if(currentFilter==='new'&&(s.includes('работ')||s.includes('done')))return false;
-        if(currentFilter==='progress'&&!s.includes('работ'))return false;
-        if(currentFilter==='done'&&!s.includes('выполн')&&!s.includes('done'))return false;
-        return true;
-    });
-    renderTasks(filtered);
-}
-
-function setFilter(f,el){
-    currentFilter=f;
-    document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-    el.classList.add('active');
-    filterTasks();
-}
-
-function renderTasks(tasks){
-    const el=document.getElementById('taskList');
-    if(!tasks.length){el.innerHTML='<div class="empty">Нет задач</div>';return}
-    const now=new Date();
-    el.innerHTML=tasks.map(t=>{
-        const s=(t.status?.name||'').toLowerCase();
-        let badge='b-new',badgeText='Новая';
-        if(s.includes('работ')||s.includes('progress')){badge='b-prog';badgeText='В работе'}
-        if(s.includes('выполн')||s.includes('done')||s.includes('заверш')){badge='b-done';badgeText='Выполнено'}
-        const overdue=t.deadline&&new Date(t.deadline)<now&&!s.includes('выполн')&&!s.includes('done');
-        return`<div class="task-card">
-            <div class="t-name">${esc(t.name||'Без названия')}</div>
-            <div class="t-meta">
-                <span class="task-badge ${badge}">${badgeText}</span>
-                ${t.deadline?'<span>📅 '+t.deadline+'</span>':''}
-                ${t.assignedTo?.name?'<span>👤 '+esc(t.assignedTo.name)+'</span>':''}
-                ${overdue?'<span style="color:var(--red)">⚠️ Просрочено</span>':''}
-            </div>
-        </div>`;
-    }).join('');
-}
-
-// ===== TABS =====
-function switchTab(tab){
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
-    document.getElementById('sec'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
-}
-
-// ===== UTILS =====
-function showToast(msg){
-    const t=document.createElement('div');
-    t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#064e3b;color:#6ee7b7;padding:10px 20px;border-radius:10px;font-size:13px;z-index:300;transition:opacity .3s';
-    t.textContent=msg;document.body.appendChild(t);
-    setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},2500);
-}
+// === UTILS ===
 function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
 
-// ===== INIT =====
+// === INIT ===
 (function(){
-    try{cfg=JSON.parse(localStorage.getItem('dash_cfg')||'{}')}catch(e){}
-    if(!cfg.appsScript)cfg.appsScript='';
-    if(!cfg.domain)cfg.domain='';
-    if(!cfg.token)cfg.token='';
-    loadData();
+    try{cfg=JSON.parse(localStorage.getItem('duty_cfg')||'{}')}catch(e){}
+    if(!cfg.url)cfg.url='';
+    loadDuty();
 })();
 </script>
 </body>
