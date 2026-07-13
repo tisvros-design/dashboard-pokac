@@ -222,34 +222,42 @@ function setConn(ok){
 // === PLANFIX TASKS ===
 function loadTasks(){
     if(!cfg.pfToken){
-        document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⚙️ Введите токен Planfix в настройках</div>';
+        document.getElementById('tasksWidgets').innerHTML='<div class="tasks-empty">⚙️ Введите токен Planfix в настройках</div>';
         return;
     }
-    document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">⏳ Загрузка задач...</div>';
+    document.getElementById('tasksWidgets').innerHTML='<div class="tasks-empty">⏳ Загрузка задач...</div>';
 
-    fetch(PF_PROXY,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            action:'taskList',
-            params:{
-                page:1,
-                pageSize:100,
-                fields:'id,name,status,assignedTo,contact',
-                filters:[{type:2,operator:'equal',value:'group:6164'}]
-            }
-        })
-    })
-    .then(function(r){return r.json()})
-    .then(function(d){
-        if(d.error)throw new Error(d.error);
-        if(d.result==='fail')throw new Error(d.error||'API error');
-        allTasks=d.tasks||d||[];
-        renderTasks();
-    })
-    .catch(function(e){
-        document.getElementById('tasksGrid').innerHTML='<div class="tasks-empty">❌ '+esc(e.message)+'</div>';
+    var pfBase=cfg.pfUrl||PF_DEFAULT;
+    if(pfBase.charAt(pfBase.length-1)!=='/')pfBase+='/';
+    var directUrl=pfBase+'task/list';
+    var reqBody=JSON.stringify({
+        page:1,
+        pageSize:100,
+        fields:'id,name,status,assignedTo,contact,project,priority,customFieldData,description,author,deadline',
+        filters:[{type:2,operator:'equal',value:'group:6164'}]
     });
+    var reqHeaders={'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'};
+
+    fetch(directUrl,{method:'POST',headers:reqHeaders,body:reqBody})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(d){handleTasksResult(d)})
+    .catch(function(){
+        fetch(PF_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({url:directUrl,method:'POST',headers:reqHeaders,body:JSON.parse(reqBody)})
+        })
+        .then(function(r){return r.json()})
+        .then(function(d){handleTasksResult(d)})
+        .catch(function(e2){
+            document.getElementById('tasksWidgets').innerHTML='<div class="tasks-empty">❌ '+esc(e2.message)+'</div>';
+        });
+    });
+}
+
+function handleTasksResult(d){
+    if(d.error)throw new Error(d.error);
+    if(d.result==='fail')throw new Error(d.error||'API error');
+    allTasks=d.tasks||d||[];
+    renderTasks();
 }
 
 function renderTasks(){
