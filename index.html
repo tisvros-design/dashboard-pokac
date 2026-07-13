@@ -231,36 +231,52 @@ function loadTasks(){
     var pfBase=cfg.pfUrl||PF_DEFAULT;
     if(pfBase.charAt(pfBase.length-1)!=='/')pfBase+='/';
     var directUrl=pfBase+'task/list';
-    var reqBody=JSON.stringify({
-        page:1,
-        pageSize:100,
-        fields:'id,name,status,1872,12126,1784,dateTime,assignees',
-        filters:[
-            {type:2,operator:'equal',value:'group:6164'}
-        ]
-    });
     var reqHeaders={'Authorization':'Bearer '+cfg.pfToken,'Content-Type':'application/json','Accept':'application/json'};
 
-    fetch(directUrl,{method:'POST',headers:reqHeaders,body:reqBody})
-    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(d){handleTasksResult(d)})
-    .catch(function(){
-        fetch(PF_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({url:directUrl,method:'POST',headers:reqHeaders,body:JSON.parse(reqBody)})
-        })
-        .then(function(r){return r.json()})
-        .then(function(d){handleTasksResult(d)})
-        .catch(function(e2){
-            document.getElementById('tasksWidgets').innerHTML='<div class="tasks-empty">❌ '+esc(e2.message)+'</div>';
-        });
+    // Запрос 1: Новые задачи (status=1) — для приоритетов, Трамвая
+    var reqNew=JSON.stringify({
+        page:1,pageSize:100,
+        fields:'id,name,status,1872,12126,dateTime',
+        filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'equal',value:1}]
     });
-}
 
-function handleTasksResult(d){
-    if(d.error)throw new Error(d.error);
-    if(d.result==='fail')throw new Error(d.error||'API error');
-    allTasks=d.tasks||d||[];
-    renderTasks();
+    // Запрос 2: Все активные (кроме завершено/отменено) — для выездных
+    var reqActive=JSON.stringify({
+        page:1,pageSize:100,
+        fields:'id,name,status,12126,dateTime',
+        filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'notequal',value:3},{type:10,operator:'notequal',value:4}]
+    });
+
+    function doPost(url,body){
+        return fetch(url,{method:'POST',headers:reqHeaders,body:body})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
+    }
+
+    function doProxy(url,body){
+        return fetch(PF_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({url:url,method:'POST',headers:reqHeaders,body:JSON.parse(body)})
+        }).then(function(r){return r.json();});
+    }
+
+    function fetchTasks(url,body){
+        return doPost(url,body).catch(function(){return doProxy(url,body);});
+    }
+
+    Promise.all([
+        fetchTasks(directUrl,reqNew),
+        fetchTasks(directUrl,reqActive)
+    ]).then(function(results){
+        var newD=results[0], activeD=results[1];
+        var newTasks=(newD.tasks)||[];
+        var activeTasks=(activeD.tasks)||[];
+
+        if(newD.error)throw new Error(newD.error);
+        if(newD.result==='fail')throw new Error(newD.error||'API error');
+
+        renderTasks(newTasks,activeTasks);
+    }).catch(function(e){
+        document.getElementById('tasksWidgets').innerHTML='<div class="tasks-empty">❌ '+esc(e.message)+'</div>';
+    });
 }
 
 function getStatusId(t){
@@ -269,9 +285,9 @@ function getStatusId(t){
     return typeof s==='object'?s.id:s;
 }
 
-function renderTasks(){
+function renderTasks(newTasks,activeTasks){
     var el=document.getElementById('tasksWidgets');
-    if(!allTasks.length){
+    if(!newTasks.length&&!activeTasks.length){
         el.innerHTML='<div class="tasks-empty">✅ Нет задач</div>';
         document.getElementById('tasksCount').textContent='0';
         return;
@@ -280,12 +296,6 @@ function renderTasks(){
     var today=new Date();
     var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
 
-    // Статусы: 1=Новые, 2=В работе, 3=Завершено, 4=Отменено
-    // Новые = status 1
-    // Выездные = все кроме 3 и 4
-    var newTasks=allTasks.filter(function(t){return getStatusId(t)===1;});
-    var activeTasks=allTasks.filter(function(t){var s=getStatusId(t);return s!==3&&s!==4;});
-
     var total=newTasks.length,totalToday=0;
     var tramvay=0,tramvayToday=0;
     var regular=0,regToday=0, urgent=0,urgToday=0, blocking=0,blkToday=0;
@@ -293,7 +303,7 @@ function renderTasks(){
     var noPriority=0,npToday=0;
     var onsite=0,onsiteToday=0;
 
-    // Считаем по НОВЫМ (status=1) для приоритетов и Трамвая
+    // Приоритеты и Трамвай — по НОВЫМ (status=1)
     newTasks.forEach(function(t){
         var created='';
         if(t.dateTime){var dt=t.dateTime;created=typeof dt==='object'?dt.date||dt.datetime||'':String(dt);}
@@ -326,7 +336,7 @@ function renderTasks(){
         else{noPriority++;if(isToday)npToday++;}
     });
 
-    // Считаем выездные по АКТИВНЫМ (все кроме завершено/отменено)
+    // Выездные — по АКТИВНЫМ (все кроме 3,4)
     activeTasks.forEach(function(t){
         var created='';
         if(t.dateTime){var dt=t.dateTime;created=typeof dt==='object'?dt.date||dt.datetime||'':String(dt);}
