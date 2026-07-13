@@ -90,6 +90,7 @@
         .tw-color-yellow .tw-num{color:#f59e0b}
         .tw-color-purple .tw-num{color:#a78bfa}
         .tw-color-cyan .tw-num{color:#06b6d4}
+        .tw-today{font-size:10px;color:#475569;margin-top:6px;border-top:1px solid #2d3a50;padding-top:6px}
         .tasks-empty{text-align:center;padding:30px;color:#475569;font-size:12px}
 
         @media(max-width:700px){
@@ -233,7 +234,7 @@ function loadTasks(){
     var reqBody=JSON.stringify({
         page:1,
         pageSize:100,
-        fields:'id,name,status,1872,12126,1784',
+        fields:'id,name,status,1872,12126,1784,dateTime,assignees',
         filters:[
             {type:2,operator:'equal',value:'group:6164'},
             {type:10,operator:'equal',value:1}
@@ -278,17 +279,33 @@ function renderTasks(){
         return;
     }
 
-    var total=allTasks.length;
-    var tramvay=0;
-    var regular=0, urgent=0, blocking=0, support=0, internal=0;
-    var noPriority=0;
-    var onsite=0;
+    var today=new Date();
+    var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+
+    var total=0,totalToday=0;
+    var tramvay=0,tramvayToday=0;
+    var regular=0,regToday=0, urgent=0,urgToday=0, blocking=0,blkToday=0;
+    var support=0,supToday=0, internal=0,intToday=0;
+    var noPriority=0,npToday=0;
+    var onsite=0,onsiteToday=0;
 
     allTasks.forEach(function(t){
-        var name=(t.name||'').toUpperCase();
-        if(name.indexOf('MAX')===0||name.indexOf('ТРАМВАЙ')===0)tramvay++;
+        // Проверяем дату создания
+        var created='';
+        if(t.dateTime){
+            var dt=t.dateTime;
+            created=typeof dt==='object'?dt.date||dt.datetime||'':String(dt);
+        }
+        var isToday=created.indexOf(todayStr)===0;
 
-        // customFieldData — массив полей
+        total++;
+        if(isToday)totalToday++;
+
+        var name=(t.name||'').toUpperCase();
+        var isTramvay=name.indexOf('MAX')===0||name.indexOf('ТРАМВАЙ')===0;
+        if(isTramvay){tramvay++;if(isToday)tramvayToday++;}
+
+        // customFieldData
         var cf=t.customFieldData||[];
         var pName='';
         var hasAddress=false;
@@ -297,14 +314,12 @@ function renderTasks(){
             var f=cf[i];
             var fid=f.field?f.field.id:f.id;
 
-            // Поле 1872 — Приоритет
             if(fid===1872){
                 var v=f.value;
                 if(v&&typeof v==='object')v=v.value||'';
                 pName=String(v).replace(/[⏳⛔🔥👨🏻‍💻📋\u{1F4CB}]/gu,'').replace(/\s+/g,' ').trim();
             }
 
-            // Поле 12126 — Адрес выезда
             if(fid===12126){
                 var av=f.value;
                 if(av&&typeof av==='object')av=av.value||'';
@@ -312,34 +327,41 @@ function renderTasks(){
             }
         }
 
-        if(hasAddress)onsite++;
+        // Выездные: адрес заполнен ИЛИ исполнитель — группа (6164)
+        if(hasAddress){
+            onsite++;
+            if(isToday)onsiteToday++;
+        }
 
-        if(pName.indexOf('Блокирующая')!==-1)blocking++;
-        else if(pName.indexOf('Срочная')!==-1)urgent++;
-        else if(pName.indexOf('Техническая')!==-1||pName.indexOf('поддержка')!==-1)support++;
-        else if(pName.indexOf('Внутренние')!==-1||pName.indexOf('поручения')!==-1)internal++;
-        else if(pName.indexOf('Обычная')!==-1)regular++;
-        else noPriority++;
+        var cat='';
+        if(pName.indexOf('Блокирующая')!==-1){blocking++;if(isToday)blkToday++;cat='b';}
+        else if(pName.indexOf('Срочная')!==-1){urgent++;if(isToday)urgToday++;cat='u';}
+        else if(pName.indexOf('Техническая')!==-1||pName.indexOf('поддержка')!==-1){support++;if(isToday)supToday++;cat='s';}
+        else if(pName.indexOf('Внутренние')!==-1||pName.indexOf('поручения')!==-1){internal++;if(isToday)intToday++;cat='i';}
+        else if(pName.indexOf('Обычная')!==-1){regular++;if(isToday)regToday++;cat='r';}
+        else{noPriority++;if(isToday)npToday++;}
     });
 
     document.getElementById('tasksCount').textContent=total;
 
     var html='';
-    html+=ww(total,'Новых','blue');
-    html+=ww(regular,'Обычная','green');
-    html+=ww(urgent,'Срочная','yellow');
-    html+=ww(blocking,'Блокирующая','red');
-    html+=ww(support,'Техподдержка','cyan');
-    html+=ww(internal,'Поручения','purple');
-    html+=ww(tramvay,'Трамвай','orange');
-    html+=ww(onsite,'Выездные','green');
-    if(noPriority)html+=ww(noPriority,'Без приоритета','blue');
+    html+=ww(total,totalToday,'Новых','blue');
+    html+=ww(regular,regToday,'Обычная','green');
+    html+=ww(urgent,urgToday,'Срочная','yellow');
+    html+=ww(blocking,blkToday,'Блокирующая','red');
+    html+=ww(support,supToday,'Техподдержка','cyan');
+    html+=ww(internal,intToday,'Поручения','purple');
+    html+=ww(tramvay,tramvayToday,'🚃 Трамвай','orange');
+    html+=ww(onsite,onsiteToday,'📍 Выездные','green');
+    if(noPriority)html+=ww(noPriority,npToday,'Без приоритета','blue');
 
     el.innerHTML=html;
 }
 
-function ww(n,label,color){
-    return '<div class="task-widget tw-color-'+color+'"><div class="tw-num">'+n+'</div><div class="tw-label">'+label+'</div></div>';
+function ww(n,today,label,color){
+    var s='<div class="task-widget tw-color-'+color+'"><div class="tw-num">'+n+'</div><div class="tw-label">'+label+'</div>';
+    if(today)s+='<div class="tw-today">сегодня: '+today+'</div>';
+    return s+'</div>';
 }
 
 function renderCarousel(){
