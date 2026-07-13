@@ -9,7 +9,7 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0f1a;color:#e2e8f0;min-height:100vh;padding:16px}
 
-        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
         .header h1{font-size:20px;font-weight:700;color:#3b82f6}
         .hdr-right{display:flex;gap:8px;align-items:center}
         .hdr-btn{background:#1e293b;border:1px solid #2d3a50;border-radius:8px;padding:6px 12px;color:#94a3b8;font-size:12px;cursor:pointer}
@@ -18,55 +18,34 @@
         .conn.ok{background:rgba(16,185,129,.15);color:#10b981}
         .conn.off{background:rgba(100,116,139,.15);color:#64748b}
 
-        /* Today Info */
-        .today-info{background:linear-gradient(135deg,#1e3a5f 0%,#1e293b 100%);border:2px solid #3b82f6;border-radius:16px;padding:20px;margin-bottom:20px;text-align:center}
-        .today-date{font-size:16px;font-weight:700;color:#3b82f6;margin-bottom:4px}
-        .today-month{font-size:13px;color:#64748b;margin-bottom:16px}
-        .today-grid{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
-        .today-item{text-align:center}
-        .today-label{font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:6px}
-        .today-people{font-size:15px;font-weight:600}
-        .today-people.day-color{color:#60a5fa}
-        .today-people.evening-color{color:#fb923c}
-        .today-people.weekend-color{color:#34d399}
+        /* Carousel */
+        .carousel-wrap{position:relative;margin-bottom:32px}
+        .carousel-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:#1e293b;border:2px solid #2d3a50;color:#94a3b8;font-size:18px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;transition:all .2s}
+        .carousel-nav:hover{border-color:#3b82f6;color:#3b82f6;background:#0f172a}
+        .carousel-nav.prev{left:-20px}
+        .carousel-nav.next{right:-20px}
+        .carousel{display:flex;gap:12px;overflow-x:auto;scroll-behavior:smooth;padding:8px 20px;-ms-overflow-style:none;scrollbar-width:none}
+        .carousel::-webkit-scrollbar{display:none}
 
-        /* Week Cards */
-        .week-title{font-size:14px;font-weight:600;color:#64748b;margin-bottom:12px}
-        .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:24px}
-        
-        .day-card{background:#1e293b;border:2px solid #2d3a50;border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s}
-        .day-card:hover{transform:translateY(-2px);border-color:#3b82f6}
-        .day-card.today{border-color:#10b981;background:linear-gradient(135deg,#064e3b 0%,#1e293b 100%);box-shadow:0 0 20px rgba(16,185,129,.2)}
-        .day-card.weekend-card{opacity:.7}
-        
-        .day-name{font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:4px}
-        .day-num{font-size:22px;font-weight:800;color:#e2e8f0;margin-bottom:10px}
-        .day-card.today .day-num{color:#10b981}
-        
-        .duty-person{display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:600;margin-bottom:4px}
-        .duty-icon{font-size:14px}
+        .day-card{flex:0 0 160px;background:#1e293b;border:2px solid #2d3a50;border-radius:14px;padding:16px 12px;text-align:center;transition:all .2s}
+        .day-card:hover{transform:translateY(-3px);border-color:#3b82f6}
+        .day-card.today{border-color:#10b981;background:linear-gradient(135deg,#064e3b 0%,#1e293b 100%);box-shadow:0 0 24px rgba(16,185,129,.25);flex:0 0 180px}
+        .day-card.weekend-card{opacity:.65}
+
+        .day-name{font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:2px}
+        .day-date{font-size:20px;font-weight:800;color:#e2e8f0;margin-bottom:10px}
+        .day-card.today .day-date{color:#10b981;font-size:24px}
+        .day-card.today .day-name{color:#10b981}
+
+        .duty-line{display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:600;margin-bottom:3px;line-height:1.3}
+        .duty-icon{font-size:13px}
         .duty-name.day{color:#60a5fa}
         .duty-name.evening{color:#fb923c}
         .duty-name.weekend{color:#34d399}
         .duty-name.vacation{color:#a78bfa}
+        .duty-empty{color:#475569;font-size:11px}
 
-        /* Schedule Table */
-        .sched-section{background:#1e293b;border:1px solid #2d3a50;border-radius:12px;padding:16px;overflow-x:auto;margin-bottom:20px}
-        .sched-title{font-size:14px;font-weight:600;color:#64748b;margin-bottom:12px}
-        .sched{width:100%;border-collapse:collapse;font-size:11px}
-        .sched th,.sched td{padding:6px 5px;text-align:center;border:1px solid #2d3a50;min-width:30px}
-        .sched th{background:#0f172a;font-weight:600;color:#64748b}
-        .sched td.name{text-align:left;font-weight:600;min-width:90px;background:rgba(0,0,0,.2);white-space:nowrap}
-        .sched td.today-col{background:rgba(59,130,246,.1);font-weight:700}
-        .c1{background:#1d4ed8;color:#fff;font-weight:700}
-        .c2{background:#c2410c;color:#fff;font-weight:700}
-        .cv{background:#166534;color:#fff;font-weight:700}
-        .co{background:#7c3aed;color:#fff;font-weight:700}
-        .legend{margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#64748b}
-        .legend span{display:flex;align-items:center;gap:4px}
-        .legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
-
-        /* Settings Modal */
+        /* Settings */
         .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center}
         .modal-bg.active{display:flex}
         .modal{background:#1e293b;border-radius:12px;padding:24px;width:420px;max-width:95vw;border:1px solid #2d3a50}
@@ -79,16 +58,17 @@
         .mbtn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
         .mbtn.p{background:#3b82f6;color:white}
         .mbtn.s{background:#334155;color:#e2e8f0}
+        .mbtn.d{background:#7f1d1d;color:#fca5a5;margin-top:4px}
 
         .empty{text-align:center;padding:40px;color:#64748b;font-size:13px}
         .loading{text-align:center;padding:30px;color:#64748b}
 
-        @media(max-width:900px){
-            .week-grid{grid-template-columns:repeat(4,1fr)}
-            .today-grid{gap:16px}
-        }
-        @media(max-width:600px){
-            .week-grid{grid-template-columns:repeat(3,1fr)}
+        .update-time{text-align:center;margin-top:20px;font-size:11px;color:#475569}
+
+        @media(max-width:700px){
+            .day-card{flex:0 0 130px}
+            .day-card.today{flex:0 0 150px}
+            .carousel-nav{display:none}
         }
     </style>
 </head>
@@ -102,37 +82,16 @@
     </div>
 </div>
 
-<!-- Сегодня -->
-<div class="today-info">
-    <div class="today-date" id="todayDate">—</div>
-    <div class="today-month" id="todayMonth">Загрузка...</div>
-    <div class="today-grid">
-        <div class="today-item">
-            <div class="today-label">☀️ Дневное дежурство</div>
-            <div class="today-people day-color" id="todayDay">—</div>
-        </div>
-        <div class="today-item">
-            <div class="today-label">🌙 Вечернее дежурство</div>
-            <div class="today-people evening-color" id="todayEvening">—</div>
-        </div>
-        <div class="today-item">
-            <div class="today-label">⛱ Выходной</div>
-            <div class="today-people weekend-color" id="todayWeekend">—</div>
-        </div>
+<!-- Carousel -->
+<div class="carousel-wrap">
+    <button class="carousel-nav prev" onclick="scrollCarousel(-3)">◀</button>
+    <div class="carousel" id="carousel">
+        <div class="loading">⏳ Загрузка графика...</div>
     </div>
+    <button class="carousel-nav next" onclick="scrollCarousel(3)">▶</button>
 </div>
 
-<!-- Неделя -->
-<div class="week-title" id="weekTitle">📅 Текущая неделя</div>
-<div class="week-grid" id="weekGrid">
-    <div class="loading">⏳ Загрузка графика...</div>
-</div>
-
-<!-- Таблица -->
-<div class="sched-section">
-    <div class="sched-title">📋 Полный график на месяц</div>
-    <div id="schedTable"></div>
-</div>
+<div class="update-time" id="updateTime"></div>
 
 <!-- Settings Modal -->
 <div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
@@ -141,7 +100,6 @@
         <div class="f">
             <label>Apps Script URL</label>
             <input type="text" id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec">
-            <div class="hint">URL веб-приложения из Google Apps Script (тот что в Planfix)</div>
         </div>
         <button class="mbtn p" onclick="saveSettings()">💾 Сохранить</button>
         <button class="mbtn s" onclick="closeSettings()">Закрыть</button>
@@ -149,8 +107,10 @@
 </div>
 
 <script>
-let cfg={url:''};
-let cachedData=null;
+var DEFAULT_URL='https://script.google.com/macros/s/AKfycby9JoXmATa6_YaXuWSBdmVT2KBpOz-Dp1FWHb1cPoJqrG4-ow2bKfWfXlb3DzTvNnJLQo/exec';
+var cfg={url:''};
+var cachedData=null;
+var viewOffset=0; // смещение от сегодня
 
 // === SETTINGS ===
 function openSettings(){
@@ -166,176 +126,113 @@ function saveSettings(){
 }
 
 // === JSONP LOAD ===
-const DEFAULT_URL='https://script.google.com/macros/s/AKfycbwJsuMmvPUI0suX0dUYqUXcmMCTi4QhZoD9J75d6iftfIHYGxvaML5dCTsu6X0FiCTKMQo/exec';
-let loadIdx=0;
+var loadIdx=0;
 function loadDuty(){
-    const url=cfg.url||DEFAULT_URL;
-    if(!url){
-        document.getElementById('weekGrid').innerHTML='<div class="empty">⚠️ URL не настроен. Нажмите ⚙️ Настройки</div>';
-        return;
-    }
-    
-    document.getElementById('weekGrid').innerHTML='<div class="loading">⏳ Загрузка...</div>';
-    
-    // Очищаем старые данные
+    var url=cfg.url||DEFAULT_URL;
+    if(!url){return;}
     window._dutyData=null;
-    
-    const s=document.createElement('script');
+
+    var s=document.createElement('script');
     s.id='dutyScript'+(++loadIdx);
     s.src=url+'?mode=jsonp';
     s.onload=function(){
-        // JSONP записывает в window._dutyData
         setTimeout(function(){
-            if(window._dutyData){
-                if(window._dutyData.error){
-                    document.getElementById('weekGrid').innerHTML='<div class="empty">❌ '+esc(window._dutyData.error)+'</div>';
-                    setConn(false);
-                }else{
-                    cachedData=window._dutyData;
-                    setConn(true);
-                    renderAll(window._dutyData);
-                }
+            if(window._dutyData && !window._dutyData.error){
+                cachedData=window._dutyData;
+                setConn(true);
+                viewOffset=0;
+                renderCarousel();
             }else{
-                document.getElementById('weekGrid').innerHTML='<div class="empty">❌ Нет данных. Проверьте URL.</div>';
                 setConn(false);
             }
-        },500);
+        },300);
     };
-    s.onerror=function(){
-        document.getElementById('weekGrid').innerHTML='<div class="empty">❌ Ошибка загрузки. Проверьте URL.</div>';
-        setConn(false);
-    };
+    s.onerror=function(){setConn(false)};
     document.body.appendChild(s);
 }
 
 function setConn(ok){
-    const el=document.getElementById('connStatus');
+    var el=document.getElementById('connStatus');
     if(ok){el.className='conn ok';el.textContent='● Подключено'}
     else{el.className='conn off';el.textContent='○ Отключено'}
 }
 
-// === RENDER ===
-function renderAll(data){
-    // Сегодня
-    if(data.date){
-        const d=data.date;
-        document.getElementById('todayDate').textContent=d.dateRu+' ('+d.dayOfWeek.toUpperCase()+')';
-        document.getElementById('todayMonth').textContent=data.month;
-    }
-    if(data.today){
-        document.getElementById('todayDay').textContent=(data.today.day||[]).join(', ')||'Нет';
-        document.getElementById('todayEvening').textContent=(data.today.evening||[]).join(', ')||'Нет';
-        document.getElementById('todayWeekend').textContent=(data.today.weekend||[]).join(', ')||'Нет';
-    }
-    
-    // Карточки недели
-    if(data.employees&&data.date){
-        renderWeekCards(data);
-        renderScheduleTable(data);
-    }
-}
+// === CAROUSEL ===
+function renderCarousel(){
+    if(!cachedData||!cachedData.employees)return;
+    var data=cachedData;
+    var today=data.date.day;
+    var year=data.date.year;
+    var month=data.date.month;
 
-function renderWeekCards(data){
-    const today=data.date.day;
-    const year=data.date.year;
-    const month=data.date.month;
-    
-    // Определяем текущую неделю (пн-вс)
-    const todayDate=new Date(year,month-1,today);
-    const dayOfWeek=todayDate.getDay();
-    const mondayOffset=dayOfWeek===0?-6:1-dayOfWeek;
-    const monday=new Date(todayDate);
-    monday.setDate(todayDate.getDate()+mondayOffset);
-    
-    let html='';
-    const dayNames=['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
-    
-    for(let i=0;i<7;i++){
-        const d=new Date(monday);
-        d.setDate(monday.getDate()+i);
-        const dayNum=d.getDate();
-        const isToday=dayNum===today&&d.getMonth()===month-1;
-        const isWeekend=i>=5;
-        
-        // Ищем кто на дежурстве
-        let dayP=[],eveningP=[],weekendP=[];
-        data.employees.forEach(emp=>{
-            const v=emp.duties[dayNum];
+    // Центр — сегодня + offset
+    var centerDay=today+viewOffset;
+    var centerDate=new Date(year,month-1,centerDay);
+
+    // Показываем 7 дней: center-3 ... center+3
+    var startOffset=-3;
+    var endOffset=3;
+
+    var html='';
+    for(var i=startOffset;i<=endOffset;i++){
+        var d=new Date(centerDate);
+        d.setDate(centerDate.getDate()+i);
+        var dayNum=d.getDate();
+        var dMonth=d.getMonth()+1;
+        var isToday=(dayNum===today && dMonth===month && d.getFullYear()===year);
+        var isWeekend=d.getDay()===0||d.getDay()===6;
+        var dayNames=['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+
+        // Ищем дежурных
+        var dayP=[],eveningP=[],weekendP=[];
+        data.employees.forEach(function(emp){
+            var v=emp.duties[dayNum];
             if(v==='day')dayP.push(emp.name);
             else if(v==='evening')eveningP.push(emp.name);
             else if(v==='weekend')weekendP.push(emp.name);
         });
-        
-        const dateStr=dayNum+'.'+String(d.getMonth()+1).padStart(2,'0');
-        
-        html+=`<div class="day-card${isToday?' today':''}${isWeekend?' weekend-card':''}">
-            <div class="day-name">${dayNames[i]}</div>
-            <div class="day-num">${dateStr}</div>
-            ${dayP.length?`<div class="duty-person"><span class="duty-icon">☀️</span><span class="duty-name day">${esc(dayP.join(', '))}</span></div>`:''}
-            ${eveningP.length?`<div class="duty-person"><span class="duty-icon">🌙</span><span class="duty-name evening">${esc(eveningP.join(', '))}</span></div>`:''}
-            ${weekendP.length?`<div class="duty-person"><span class="duty-icon">⛱</span><span class="duty-name weekend">${esc(weekendP.join(', '))}</span></div>`:''}
-            ${!dayP.length&&!eveningP.length&&!weekendP.length?'<div class="duty-person" style="color:#475569">—</div>':''}
-        </div>`;
+
+        var dateStr=dayNum+'.'+String(dMonth).padStart(2,'0');
+
+        html+='<div class="day-card'+(isToday?' today':'')+(isWeekend?' weekend-card':'')+'">';
+        html+='<div class="day-name">'+dayNames[d.getDay()]+'</div>';
+        html+='<div class="day-date">'+dateStr+'</div>';
+        if(dayP.length||eveningP.length||weekendP.length){
+            if(dayP.length) html+='<div class="duty-line"><span class="duty-icon">☀️</span><span class="duty-name day">'+esc(dayP.join(', '))+'</span></div>';
+            if(eveningP.length) html+='<div class="duty-line"><span class="duty-icon">🌙</span><span class="duty-name evening">'+esc(eveningP.join(', '))+'</span></div>';
+            if(weekendP.length) html+='<div class="duty-line"><span class="duty-icon">⛱</span><span class="duty-name weekend">'+esc(weekendP.join(', '))+'</span></div>';
+        }else{
+            html+='<div class="duty-empty">—</div>';
+        }
+        html+='</div>';
     }
-    
-    document.getElementById('weekGrid').innerHTML=html;
-    
-    // Заголовок недели
-    const sunday=new Date(monday);
-    sunday.setDate(monday.getDate()+6);
-    document.getElementById('weekTitle').textContent='📅 '+monday.getDate()+'.'+String(monday.getMonth()+1).padStart(2,'0')+' — '+sunday.getDate()+'.'+String(sunday.getMonth()+1).padStart(2,'0');
+
+    document.getElementById('carousel').innerHTML=html;
+
+    // Прокрутить к центру (сегодня)
+    setTimeout(function(){
+        var c=document.getElementById('carousel');
+        var cards=c.querySelectorAll('.day-card');
+        if(cards[3]) cards[3].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+    },100);
+
+    document.getElementById('updateTime').textContent='Обновлено: '+new Date().toLocaleString('ru-RU');
 }
 
-function renderScheduleTable(data){
-    if(!data.employees||!data.employees.length){
-        document.getElementById('schedTable').innerHTML='<div class="empty">Нет данных</div>';
-        return;
-    }
-    
-    const allDays=new Set();
-    data.employees.forEach(e=>Object.keys(e.duties).forEach(d=>allDays.add(parseInt(d))));
-    const days=Array.from(allDays).sort((a,b)=>a-b);
-    const todayDay=data.date?data.date.day:null;
-    
-    let h='<table class="sched"><tr><th>ФИО</th>';
-    days.forEach(d=>{
-        h+='<th'+(d===todayDay?' style="background:#3b82f6;color:#fff"':'')+'>'+d+'</th>';
-    });
-    h+='</tr>';
-    
-    data.employees.forEach(emp=>{
-        h+='<tr><td class="name">'+esc(emp.name)+'</td>';
-        days.forEach(d=>{
-            const v=emp.duties[d]||'';
-            let cls='',txt='';
-            if(v==='day'){cls='c1';txt='1'}
-            else if(v==='evening'){cls='c2';txt='2'}
-            else if(v==='weekend'){cls='cv';txt='В'}
-            else if(v==='vacation'){cls='co';txt='О'}
-            h+='<td class="'+cls+(d===todayDay?' today-col':'')+'">'+txt+'</td>';
-        });
-        h+='</tr>';
-    });
-    h+='</table>';
-    
-    h+='<div class="legend">';
-    h+='<span><i class="c1"></i> 1 = Дневное</span>';
-    h+='<span><i class="c2"></i> 2 = Вечернее</span>';
-    h+='<span><i class="cv"></i> В = Выходной</span>';
-    h+='<span><i class="co"></i> О = Отпуск</span>';
-    h+='</div>';
-    
-    document.getElementById('schedTable').innerHTML=h;
+function scrollCarousel(days){
+    viewOffset+=days;
+    renderCarousel();
 }
 
 // === UTILS ===
-function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
+function esc(t){var d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
 
 // === INIT ===
 (function(){
     try{cfg=JSON.parse(localStorage.getItem('duty_cfg')||'{}')}catch(e){}
     if(!cfg.url)cfg.url='';
     loadDuty();
+    setInterval(loadDuty,60000);
 })();
 </script>
 </body>
