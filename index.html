@@ -85,7 +85,7 @@
     <h1>🏢 Dashboard POKAC</h1>
     <div class="hdr-right">
         <span class="conn off" id="connStatus">—</span>
-        <button class="hdr-btn" onclick="openStats()">📊 Статистика</button>
+        <button class="hdr-btn" onclick="openStats()">📊 Статистика дежурств</button>
         <button class="hdr-btn" onclick="openSettings()">⚙️ Настройки</button>
     </div>
 </div>
@@ -102,7 +102,7 @@
 
 <div class="modal-bg" id="statsModal" onclick="if(event.target===this)this.classList.remove('active')">
     <div class="modal">
-        <h2>📊 Статистика за месяц</h2>
+        <h2>📊 Статистика дежурств — 
         <div id="statsContent"></div>
         <button class="mbtn s" onclick="document.getElementById('statsModal').classList.remove('active')">Закрыть</button>
     </div>
