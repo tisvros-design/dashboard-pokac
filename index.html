@@ -166,9 +166,11 @@ function saveSettings(){
 }
 
 // === JSONP LOAD ===
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycborxKtn9v8YaisgELgpWAK8RBU8HzD1_s9c1Vsw1z0FiXzNskKI4XoMOkKY785GgtAqSVvvpw/exec';
 let cbIdx=0;
 function loadDuty(){
-    if(!cfg.url){
+    const url=cfg.url||DEFAULT_URL;
+    if(!url){
         document.getElementById('weekGrid').innerHTML='<div class="empty">⚠️ URL не настроен. Нажмите ⚙️ Настройки</div>';
         return;
     }
@@ -194,7 +196,7 @@ function loadDuty(){
     
     const s=document.createElement('script');
     s.id='jp'+cbName;
-    s.src=cfg.url+'?mode=jsonp&callback='+cbName;
+    s.src=url+'?mode=jsonp&callback='+cbName;
     s.onerror=function(){
         document.getElementById('weekGrid').innerHTML='<div class="empty">❌ Ошибка загрузки. Проверьте URL.</div>';
         setConn(false);
