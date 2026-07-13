@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>Dashboard POKAC</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0f1a;color:#e2e8f0;min-height:100vh;padding:20px 16px}
+
+        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+        .header h1{font-size:20px;font-weight:700;color:#3b82f6}
+        .hdr-right{display:flex;gap:8px;align-items:center}
+        .hdr-btn{background:#1e293b;border:1px solid #2d3a50;border-radius:8px;padding:6px 12px;color:#94a3b8;font-size:12px;cursor:pointer}
+        .hdr-btn:hover{border-color:#3b82f6;color:#3b82f6}
+        .conn{font-size:10px;padding:3px 8px;border-radius:10px}
+        .conn.ok{background:rgba(16,185,129,.15);color:#10b981}
+        .conn.off{background:rgba(100,116,139,.15);color:#64748b}
+
+        /* Carousel — centered, no scroll */
+        .carousel-wrap{display:flex;align-items:center;gap:12px;max-width:1200px;margin:0 auto 24px}
+        .carousel-nav{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#1e293b;border:2px solid #2d3a50;color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+        .carousel-nav:hover{border-color:#3b82f6;color:#3b82f6;background:#0f172a}
+        .carousel{display:flex;gap:10px;justify-content:center;flex:1;min-width:0}
+
+        .day-card{flex:1 1 0;min-width:100px;max-width:160px;background:#1e293b;border:2px solid #2d3a50;border-radius:14px;padding:14px 8px;text-align:center;transition:all .2s}
+        .day-card:hover{transform:translateY(-3px);border-color:#3b82f6}
+        .day-card.today{border-color:#10b981;background:linear-gradient(135deg,#064e3b 0%,#1e293b 100%);box-shadow:0 0 24px rgba(16,185,129,.25)}
+        .day-card.weekend-card{opacity:.6}
+
+        .day-name{font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:2px}
+        .day-date{font-size:18px;font-weight:800;color:#e2e8f0;margin-bottom:8px}
+        .day-card.today .day-date{color:#10b981;font-size:22px}
+        .day-card.today .day-name{color:#10b981}
+
+        .duty-line{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;font-weight:700;margin-bottom:3px;line-height:1.3}
+        .duty-icon{font-size:14px}
+        .duty-name.day{color:#60a5fa}
+        .duty-name.evening{color:#fb923c}
+        .duty-name.weekend{color:#34d399}
+        .duty-name.vacation{color:#a78bfa}
+        .duty-empty{color:#475569;font-size:10px}
+
+        @keyframes pulse-today{0%,100%{box-shadow:0 0 20px rgba(16,185,129,.2)}50%{box-shadow:0 0 35px rgba(16,185,129,.5)}}
+        .day-card.today.pulse{animation:pulse-today 2s ease-in-out infinite}
+
+        /* Settings */
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center}
+        .modal-bg.active{display:flex}
+        .modal{background:#1e293b;border-radius:12px;padding:24px;width:520px;max-width:95vw;border:1px solid #2d3a50}
+        .modal h2{font-size:16px;margin-bottom:16px;color:#3b82f6}
+
+        .stats-table{width:100%;border-collapse:collapse;font-size:13px}
+        .stats-table th{text-align:left;padding:8px 10px;border-bottom:2px solid #2d3a50;color:#64748b;font-size:11px;text-transform:uppercase}
+        .stats-table td{padding:8px 10px;border-bottom:1px solid #1e293b}
+        .stats-table tr:hover td{background:rgba(59,130,246,.05)}
+        .stats-table .name{font-weight:600;color:#e2e8f0}
+        .stats-table .num{text-align:center;font-weight:700;font-size:15px}
+        .stats-table .c-day{color:#60a5fa}
+        .stats-table .c-evening{color:#fb923c}
+        .stats-table .c-weekend{color:#34d399}
+        .stats-table .c-total{color:#e2e8f0}
+        .stats-table .total-row td{border-top:2px solid #2d3a50;font-weight:700;color:#e2e8f0}
+        .modal .f{margin-bottom:14px}
+        .modal label{display:block;font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:4px}
+        .modal input{width:100%;padding:10px;background:#0f172a;border:1px solid #2d3a50;border-radius:6px;color:#e2e8f0;font-size:13px}
+        .modal input:focus{outline:none;border-color:#3b82f6}
+        .mbtn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+        .mbtn.p{background:#3b82f6;color:white}
+        .mbtn.s{background:#334155;color:#e2e8f0}
+
+        .loading{text-align:center;padding:40px;color:#64748b}
+        .update-time{text-align:center;margin-top:24px;font-size:11px;color:#475569}
+
+        @media(max-width:700px){
+            .day-card{padding:10px 6px}
+            .day-date{font-size:14px}
+            .day-card.today .day-date{font-size:18px}
+            .duty-line{font-size:10px}
+            .carousel-nav{width:32px;height:32px;font-size:14px}
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🏢 Dashboard POKAC</h1>
+    <div class="hdr-right">
+        <span class="conn off" id="connStatus">—</span>
+        <button class="hdr-btn" onclick="openStats()">📊 Статистика дежурств</button>
+        <button class="hdr-btn" onclick="openSettings()">⚙️ Настройки</button>
+    </div>
+</div>
+
+<div class="carousel-wrap">
+    <button class="carousel-nav" onclick="scrollCarousel(-1)">◀</button>
+    <div class="carousel" id="carousel">
+        <div class="loading">⏳ Загрузка графика...</div>
+    </div>
+    <button class="carousel-nav" onclick="scrollCarousel(1)">▶</button>
+</div>
+
+<div class="update-time" id="updateTime"></div>
+
+<div class="modal-bg" id="statsModal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal">
+        <h2>📊 Статистика дежурств — 
+        <div id="statsContent"></div>
+        <button class="mbtn s" onclick="document.getElementById('statsModal').classList.remove('active')">Закрыть</button>
+    </div>
+</div>
+
+<div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+    <div class="modal">
+        <h2>⚙️ Настройки</h2>
+        <div class="f">
+            <label>Apps Script URL</label>
+            <input type="text" id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <button class="mbtn p" onclick="saveSettings()">💾 Сохранить</button>
+        <button class="mbtn s" onclick="closeSettings()">Закрыть</button>
+    </div>
+</div>
+
+<script>
+var DEFAULT_URL='https://script.google.com/macros/s/AKfycby9JoXmATa6_YaXuWSBdmVT2KBpOz-Dp1FWHb1cPoJqrG4-ow2bKfWfXlb3DzTvNnJLQo/exec';
+var cfg={url:''};
+var cachedData=null;
+var viewOffset=0;
+var lastTodayKey='';
+
+function openSettings(){
+    document.getElementById('cfgUrl').value=cfg.url||'';
+    document.getElementById('settingsModal').classList.add('active');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('active')}
+function saveSettings(){
+    cfg.url=document.getElementById('cfgUrl').value.trim();
+    localStorage.setItem('duty_cfg',JSON.stringify(cfg));
+    closeSettings();
+    loadDuty();
+}
+
+var loadIdx=0;
+function loadDuty(){
+    var url=cfg.url||DEFAULT_URL;
+    if(!url)return;
+    window._dutyData=null;
+
+    var s=document.createElement('script');
+    s.id='ds'+(++loadIdx);
+    s.src=url+'?mode=jsonp&_='+Date.now();
+    s.onload=function(){
+        setTimeout(function(){
+            if(window._dutyData && !window._dutyData.error){
+                cachedData=window._dutyData;
+                setConn(true);
+                viewOffset=0;
+                renderCarousel();
+            }else{setConn(false)}
+        },300);
+    };
+    s.onerror=function(){setConn(false)};
+    document.body.appendChild(s);
+}
+
+function setConn(ok){
+    var el=document.getElementById('connStatus');
+    if(ok){el.className='conn ok';el.textContent='● Подключено'}
+    else{el.className='conn off';el.textContent='○ Отключено'}
+}
+
+function renderCarousel(){
+    if(!cachedData||!cachedData.employees)return;
+    var data=cachedData;
+    var today=data.date.day;
+    var year=data.date.year;
+    var month=data.date.month;
+    var centerDay=today+viewOffset;
+    var centerDate=new Date(year,month-1,centerDay);
+    var dayNames=['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+
+    // Проверяем изменились ли дежурные сегодня
+    var todayKey='';
+    data.employees.forEach(function(emp){
+        var v=emp.duties[today]||'';
+        todayKey+=emp.name+':'+v+',';
+    });
+    var pulseToday=(lastTodayKey && lastTodayKey!==todayKey);
+    lastTodayKey=todayKey;
+
+    var html='';
+
+    for(var i=-3;i<=3;i++){
+        var d=new Date(centerDate);
+        d.setDate(centerDate.getDate()+i);
+        var dayNum=d.getDate();
+        var dMonth=d.getMonth()+1;
+        var isToday=(dayNum===today && dMonth===month && d.getFullYear()===year);
+        var isWk=d.getDay()===0||d.getDay()===6;
+
+        var dp=[],ep=[],wp=[];
+        data.employees.forEach(function(emp){
+            var v=emp.duties[dayNum];
+            if(v==='day')dp.push(emp.name);
+            else if(v==='evening')ep.push(emp.name);
+            else if(v==='weekend')wp.push(emp.name);
+        });
+
+        html+='<div class="day-card'+(isToday?' today':'')+(isWk?' weekend-card':'')+(isToday && pulseToday?' pulse':'')+'">';
+        html+='<div class="day-name">'+dayNames[d.getDay()]+'</div>';
+        html+='<div class="day-date">'+dayNum+'.'+String(dMonth).padStart(2,'0')+'</div>';
+        if(dp.length)html+='<div class="duty-line"><span class="duty-icon">☀️</span><span class="duty-name day">'+esc(dp.join(', '))+'</span></div>';
+        if(ep.length)html+='<div class="duty-line"><span class="duty-icon">🌙</span><span class="duty-name evening">'+esc(ep.join(', '))+'</span></div>';
+        if(wp.length)html+='<div class="duty-line"><span class="duty-icon">⛱</span><span class="duty-name weekend">'+esc(wp.join(', '))+'</span></div>';
+        if(!dp.length&&!ep.length&&!wp.length)html+='<div class="duty-empty">—</div>';
+        html+='</div>';
+    }
+
+    document.getElementById('carousel').innerHTML=html;
+    document.getElementById('updateTime').textContent='Обновлено: '+new Date().toLocaleString('ru-RU');
+}
+
+function scrollCarousel(d){viewOffset+=d;renderCarousel()}
+
+function esc(t){var e=document.createElement('div');e.textContent=t||'';return e.innerHTML}
+
+function openStats(){
+    if(!cachedData||!cachedData.employees)return;
+    var data=cachedData;
+    var monthName=data.month;
+
+    var html='<table class="stats-table">';
+    html+='<tr><th>ФИО</th><th style="text-align:center">☀️ Дневные</th><th style="text-align:center">🌙 Вечерние</th><th style="text-align:center">⛱ Выходные</th><th style="text-align:center">Итого</th></tr>';
+
+    var tDay=0,tEvening=0,tWeekend=0;
+
+    data.employees.forEach(function(emp){
+        var days=0,evenings=0,weekends=0;
+        Object.values(emp.duties).forEach(function(v){
+            if(v==='day')days++;
+            else if(v==='evening')evenings++;
+            else if(v==='weekend')weekends++;
+        });
+        var total=days+evenings+weekends;
+        tDay+=days;tEvening+=evenings;tWeekend+=weekends;
+
+        html+='<tr>';
+        html+='<td class="name">'+esc(emp.name)+'</td>';
+        html+='<td class="num c-day">'+days+'</td>';
+        html+='<td class="num c-evening">'+evenings+'</td>';
+        html+='<td class="num c-weekend">'+weekends+'</td>';
+        html+='<td class="num c-total">'+total+'</td>';
+        html+='</tr>';
+    });
+
+    html+='<tr class="total-row">';
+    html+='<td>ИТОГО</td>';
+    html+='<td class="num c-day">'+tDay+'</td>';
+    html+='<td class="num c-evening">'+tEvening+'</td>';
+    html+='<td class="num c-weekend">'+tWeekend+'</td>';
+    html+='<td class="num c-total">'+(tDay+tEvening+tWeekend)+'</td>';
+    html+='</tr></table>';
+
+    document.getElementById('statsContent').innerHTML=html;
+    document.getElementById('statsModal').classList.add('active');
+}
+
+(function(){
+    try{cfg=JSON.parse(localStorage.getItem('duty_cfg')||'{}')}catch(e){}
+    if(!cfg.url)cfg.url='';
+    loadDuty();
+    setInterval(loadDuty,60000);
+})();
+</script>
+</body>
+</html>
