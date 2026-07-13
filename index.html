@@ -259,7 +259,14 @@ function loadTasks(){
 function handleTasksResult(d){
     if(d.error)throw new Error(d.error);
     if(d.result==='fail')throw new Error(d.error||'API error');
-    allTasks=d.tasks||d||[];
+    var raw=d.tasks||d||[];
+    // Фильтруем только НОВЫЕ задачи (status.id = 1)
+    allTasks=raw.filter(function(t){
+        var s=t.status;
+        if(!s)return false;
+        var sid=typeof s==='object'?s.id:s;
+        return sid===1||sid==='1';
+    });
     renderTasks();
 }
 
@@ -279,7 +286,7 @@ function renderTasks(){
 
     allTasks.forEach(function(t){
         var name=(t.name||'').toUpperCase();
-        if(name.indexOf('MAX')===0)maxCount++;
+        if(name.indexOf('MAX')===0||name.indexOf('ТРАМВАЙ')===0)maxCount++;
 
         // Ищем приоритет в customFieldData (ID 1872)
         var pName='';
@@ -311,7 +318,7 @@ function renderTasks(){
     html+=ww(blocking,'Блокирующая','red');
     html+=ww(support,'Техподдержка','cyan');
     html+=ww(internal,'Поручения','purple');
-    html+=ww(maxCount,'MAX','orange');
+    html+=ww(maxCount,'🚃 ТРАМВАЙ','orange');
     if(noPriority)html+=ww(noPriority,'Без приоритета','blue');
 
     el.innerHTML=html;
