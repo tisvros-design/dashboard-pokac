@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>Dashboard РОКАС</title>
+    <title>Dashboard POKAC</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--bg:#0f172a;--card:#1e293b;--border:#2d3a50;--accent:#3b82f6;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--orange:#f97316;--text:#e2e8f0;--muted:#64748b;--dim:#334155}
@@ -23,16 +23,33 @@
         .section{display:none}
         .section.active{display:block}
 
-        /* Duty */
-        .duty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-        .duty-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
-        .duty-card.today{border-color:var(--green);box-shadow:0 0 12px rgba(16,185,129,.2)}
-        .duty-card .day{font-size:12px;font-weight:700;color:var(--muted)}
-        .duty-card .date{font-size:16px;font-weight:800;margin:4px 0}
-        .duty-card .person{font-size:12px;margin-top:4px}
-        .duty-card .person.day-shift{color:#fbbf24}
-        .duty-card .person.evening-shift{color:#a78bfa}
-        .duty-card .person.weekend{color:var(--green)}
+        /* Today Card */
+        .today-box{background:linear-gradient(135deg,#1e3a5f 0%,#1e293b 100%);border:2px solid var(--accent);border-radius:12px;padding:16px;margin-bottom:16px}
+        .today-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:4px}
+        .today-date{font-size:12px;color:var(--muted);margin-bottom:12px}
+        .today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .today-card{background:rgba(0,0,0,.3);border-radius:8px;padding:10px;text-align:center}
+        .today-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+        .today-value{font-size:14px;font-weight:700;margin-top:4px}
+        .today-day{color:#60a5fa}
+        .today-evening{color:#fb923c}
+        .today-weekend{color:var(--green)}
+
+        /* Schedule Table */
+        .schedule-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;overflow-x:auto}
+        .schedule-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted)}
+        .sched{width:100%;border-collapse:collapse;font-size:11px}
+        .sched th,.sched td{padding:5px 4px;text-align:center;border:1px solid var(--border);min-width:28px}
+        .sched th{background:var(--dim);font-weight:600;color:var(--muted);position:sticky;top:0}
+        .sched td.name{text-align:left;font-weight:600;min-width:80px;background:rgba(0,0,0,.2);white-space:nowrap}
+        .sched td.today-col{background:rgba(59,130,246,.15);font-weight:700}
+        .c1{background:#1d4ed8;color:#fff;font-weight:700}
+        .c2{background:#c2410c;color:#fff;font-weight:700}
+        .cv{background:#166534;color:#fff;font-weight:700}
+        .co{background:#7c3aed;color:#fff;font-weight:700}
+        .legend{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
+        .legend span{display:flex;align-items:center;gap:4px}
+        .legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
 
         /* Tasks */
         .task-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
@@ -82,7 +99,7 @@
 <body>
 
 <div class="header">
-    <h1>🏢 Dashboard РОКАС</h1>
+    <h1>🏢 Dashboard POKAC</h1>
     <div style="display:flex;gap:6px;align-items:center">
         <span class="conn off" id="connStatus">—</span>
         <button class="hdr-btn" onclick="openSettings()">⚙️</button>
@@ -92,17 +109,34 @@
 <div class="tabs">
     <div class="tab active" onclick="switchTab('duty')">📅 Дежурные</div>
     <div class="tab" onclick="switchTab('tasks')">📋 Задачи</div>
-    <div class="tab" onclick="switchTab('stats')">📊 Статистика</div>
 </div>
 
 <div class="content">
     <!-- Duty -->
     <div class="section active" id="secDuty">
-        <div class="stats-row">
-            <div class="stat-box green"><div class="v" id="dutyTodayCount">0</div><div class="l">Дежурных сегодня</div></div>
-            <div class="stat-box blue"><div class="v" id="dutyMonthCount">0</div><div class="l">Всего в месяце</div></div>
+        <div id="todayBox" class="today-box">
+            <div class="today-title">📅 Сегодня</div>
+            <div class="today-date" id="todayDate">Загрузка...</div>
+            <div class="today-grid">
+                <div class="today-card">
+                    <div class="today-label">☀️ Дневное</div>
+                    <div class="today-value today-day" id="todayDay">—</div>
+                </div>
+                <div class="today-card">
+                    <div class="today-label">🌙 Вечернее</div>
+                    <div class="today-value today-evening" id="todayEvening">—</div>
+                </div>
+                <div class="today-card">
+                    <div class="today-label">🏖️ Выходной</div>
+                    <div class="today-value today-weekend" id="todayWeekend">—</div>
+                </div>
+            </div>
         </div>
-        <div class="duty-grid" id="dutyGrid"></div>
+        <div class="schedule-wrap">
+            <div class="schedule-title">📋 График дежурств</div>
+            <div id="schedLoading" class="empty">⏳ Загрузка...</div>
+            <div id="schedTable"></div>
+        </div>
     </div>
 
     <!-- Tasks -->
@@ -122,30 +156,17 @@
         </div>
         <div id="taskList"></div>
     </div>
-
-    <!-- Stats -->
-    <div class="section" id="secStats">
-        <div class="stats-row">
-            <div class="stat-box blue"><div class="v" id="statTotal">0</div><div class="l">Всего задач</div></div>
-            <div class="stat-box green"><div class="v" id="statDoneAll">0</div><div class="l">Выполнено</div></div>
-            <div class="stat-box yellow"><div class="v" id="statProgressAll">0</div><div class="l">В работе</div></div>
-            <div class="stat-box red"><div class="v" id="statOverdueAll">0</div><div class="l">Просрочено</div></div>
-        </div>
-        <div class="task-card">
-            <div class="t-name">📊 Информация</div>
-            <div class="t-meta" style="margin-top:8px;line-height:1.6">
-                <div>Дежурства загружаются из Google Таблицы</div>
-                <div>Задачи загружаются из Planfix</div>
-                <div>Данные обновляются при нажатии кнопки</div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Settings Modal -->
 <div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
     <div class="modal">
         <h2>⚙️ Настройки</h2>
+        <div class="f">
+            <label>Apps Script URL (дежурства)</label>
+            <input type="text" id="cfgAppsScript" placeholder="https://script.google.com/macros/s/.../exec">
+            <div style="font-size:10px;color:var(--muted);margin-top:4px">Ссылка на веб-приложение Apps Script</div>
+        </div>
         <div class="f">
             <label>Домен Planfix</label>
             <input type="text" id="cfgDomain" placeholder="mycompany.planfix.com">
@@ -154,36 +175,29 @@
             <label>API токен Planfix</label>
             <input type="password" id="cfgToken" placeholder="API токен">
         </div>
-        <div class="f">
-            <label>Apps Script URL (дежурства)</label>
-            <input type="text" id="cfgAppsScript" placeholder="https://script.google.com/macros/s/.../exec">
-        </div>
-        <button class="mbtn p" onclick="testPlanfix()">🔌 Проверить Planfix</button>
-        <div id="testResult" style="margin-top:8px;font-size:12px"></div>
-        <button class="mbtn p" onclick="saveSettings()" style="margin-top:8px">💾 Сохранить</button>
+        <button class="mbtn p" onclick="saveSettings()">💾 Сохранить</button>
         <button class="mbtn s" onclick="closeSettings()">Закрыть</button>
     </div>
 </div>
 
 <script>
-let cfg={domain:'',token:'',appsScript:''};
+let cfg={appsScript:'',domain:'',token:''};
 let allTasks=[];
 let currentFilter='all';
-const COLORS=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316'];
 
 // ===== SETTINGS =====
 function openSettings(){
-    document.getElementById('cfgDomain').value=cfg.domain.replace('https://','');
-    document.getElementById('cfgToken').value=cfg.token;
-    document.getElementById('cfgAppsScript').value=cfg.appsScript;
+    document.getElementById('cfgAppsScript').value=cfg.appsScript||'';
+    document.getElementById('cfgDomain').value=(cfg.domain||'').replace('https://','');
+    document.getElementById('cfgToken').value=cfg.token||'';
     document.getElementById('settingsModal').classList.add('active');
 }
 function closeSettings(){document.getElementById('settingsModal').classList.remove('active')}
 
 function saveSettings(){
+    cfg.appsScript=document.getElementById('cfgAppsScript').value.trim();
     cfg.domain=document.getElementById('cfgDomain').value.trim();
     cfg.token=document.getElementById('cfgToken').value.trim();
-    cfg.appsScript=document.getElementById('cfgAppsScript').value.trim();
     if(cfg.domain&&!cfg.domain.includes('.'))cfg.domain+='.planfix.com';
     if(cfg.domain&&!cfg.domain.startsWith('http'))cfg.domain='https://'+cfg.domain;
     localStorage.setItem('dash_cfg',JSON.stringify(cfg));
@@ -192,96 +206,116 @@ function saveSettings(){
     loadData();
 }
 
-async function testPlanfix(){
-    const el=document.getElementById('testResult');
-    el.innerHTML='<span style="color:var(--yellow)">⏳ Проверка...</span>';
-    let d=document.getElementById('cfgDomain').value.trim();
-    let t=document.getElementById('cfgToken').value.trim();
-    if(!d||!t){el.innerHTML='<span style="color:var(--red)">Заполните домен и токен</span>';return}
-    if(!d.includes('.'))d+='.planfix.com';if(!d.startsWith('http'))d='https://'+d;
-    try{
-        const r=await fetch(d+'/api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:new URLSearchParams({method:'task.getList',access_token:t,fields:'id'}).toString()});
-        el.innerHTML=r.ok?'<span style="color:var(--green)">✅ Planfix доступен</span>':'<span style="color:var(--red)">❌ HTTP '+r.status+'</span>';
-    }catch(e){el.innerHTML='<span style="color:var(--red)">❌ '+e.message+'</span>'}
-}
-
 // ===== LOAD DATA =====
-async function loadData(){
+function loadData(){
+    loadDuty();
     if(cfg.token)loadPlanfix();
-    loadDuty(); // Always try to load duty from PHP proxy
 }
 
+// ===== DUTY via JSONP =====
+let jsonpCounter=0;
+function loadDuty(){
+    if(!cfg.appsScript){
+        document.getElementById('schedLoading').innerHTML='⚠️ URL не настроен. Нажмите ⚙️';
+        return;
+    }
+    
+    const cbName='_dutyCb'+(++jsonpCounter);
+    window[cbName]=function(data){
+        delete window[cbName];
+        const s=document.getElementById('jsonp-'+cbName);
+        if(s)s.remove();
+        if(data.error){
+            document.getElementById('schedLoading').innerHTML='❌ '+esc(data.error);
+            return;
+        }
+        document.getElementById('schedLoading').style.display='none';
+        renderDuty(data);
+        updateConnStatus(true);
+    };
+    
+    const script=document.createElement('script');
+    script.id='jsonp-'+cbName;
+    script.src=cfg.appsScript+'?mode=jsonp&callback='+cbName;
+    script.onerror=function(){
+        document.getElementById('schedLoading').innerHTML='❌ Ошибка загрузки. Проверьте URL.';
+        updateConnStatus(false);
+    };
+    document.body.appendChild(script);
+}
+
+function updateConnStatus(ok){
+    const el=document.getElementById('connStatus');
+    if(ok){el.className='conn ok';el.textContent='OK'}
+    else{el.className='conn off';el.textContent='—'}
+}
+
+function renderDuty(data){
+    // Today
+    if(data.today){
+        document.getElementById('todayDay').textContent=(data.today.day||[]).join(', ')||'—';
+        document.getElementById('todayEvening').textContent=(data.today.evening||[]).join(', ')||'—';
+        document.getElementById('todayWeekend').textContent=(data.today.weekend||[]).join(', ')||'—';
+    }
+    if(data.date){
+        document.getElementById('todayDate').textContent=data.date.dateRu+' ('+data.date.dayOfWeek+'), '+data.month;
+    }
+    
+    // Table
+    if(!data.employees||!data.employees.length){
+        document.getElementById('schedTable').innerHTML='<div class="empty">Нет данных</div>';
+        return;
+    }
+    
+    const allDays=new Set();
+    data.employees.forEach(e=>Object.keys(e.duties).forEach(d=>allDays.add(parseInt(d))));
+    const days=Array.from(allDays).sort((a,b)=>a-b);
+    const todayDay=data.date?data.date.day:null;
+    
+    let h='<table class="sched"><tr><th>ФИО</th>';
+    days.forEach(d=>{
+        h+='<th'+(d===todayDay?' style="background:var(--accent);color:#fff"':'')+'>'+d+'</th>';
+    });
+    h+='</tr>';
+    
+    data.employees.forEach(emp=>{
+        h+='<tr><td class="name">'+esc(emp.name)+'</td>';
+        days.forEach(d=>{
+            const v=emp.duties[d]||'';
+            let cls='',txt='';
+            if(v==='day'){cls='c1';txt='1'}
+            else if(v==='evening'){cls='c2';txt='2'}
+            else if(v==='weekend'){cls='cv';txt='В'}
+            else if(v==='vacation'){cls='co';txt='О'}
+            h+='<td class="'+cls+(d===todayDay?' today-col':'')+'">'+txt+'</td>';
+        });
+        h+='</tr>';
+    });
+    h+='</table>';
+    
+    h+='<div class="legend">';
+    h+='<span><i class="c1"></i> 1 = Дневное</span>';
+    h+='<span><i class="c2"></i> 2 = Вечернее</span>';
+    h+='<span><i class="cv"></i> В = Выходной</span>';
+    h+='<span><i class="co"></i> О = Отпуск</span>';
+    h+='</div>';
+    
+    document.getElementById('schedTable').innerHTML=h;
+}
+
+// ===== TASKS =====
 async function loadPlanfix(){
     if(!cfg.domain||!cfg.token)return;
     try{
         const r=await fetch(cfg.domain+'/api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:new URLSearchParams({method:'task.getList',access_token:cfg.token,fields:'id,name,status,priority,deadline,assignedTo,description,contact'}).toString()});
+            body:new URLSearchParams({method:'task.getList',access_token:cfg.token,fields:'id,name,status,priority,deadline,assignedTo'}).toString()});
         const d=await r.json();
         if(d.status==='error')return;
         allTasks=d.tasks||d||[];
-        document.getElementById('connStatus').className='conn ok';
-        document.getElementById('connStatus').textContent=allTasks.length+' задач';
         updateTaskStats();filterTasks();
     }catch(e){}
 }
 
-async function loadDuty(){
-    try{
-        // Use Cloudflare Worker as proxy (no CORS issues)
-        const r=await fetch('https://duty-proxy.tisvros.workers.dev/api/duty');
-        const d=await r.json();
-        if(d&&d.success)renderDuty(d);
-        else console.log('Duty data error:',d);
-    }catch(e){
-        console.log('Duty load error:',e);
-        document.getElementById('dutyGrid').innerHTML='<div class="empty">⚠️ '+esc(e.message)+'</div>';
-    }
-}
-
-// ===== DUTY =====
-function renderDuty(data){
-    const grid=document.getElementById('dutyGrid');
-    const today=data.date.day;
-    let total=0;
-
-    // Generate calendar for current month
-    const year=data.date.year;
-    const month=data.date.month;
-    const daysInMonth=new Date(year,month,0).getDate();
-
-    let html='';
-    for(let d=1;d<=daysInMonth;d++){
-        const isToday=d===today;
-        const dayNames=['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
-        const dayOfWeek=new Date(year,month-1,d).getDay();
-        const dayName=dayNames[dayOfWeek];
-
-        // Find who's on duty
-        let dayPerson='',eveningPerson='',weekendPerson='';
-        data.employees.forEach(emp=>{
-            if(emp.duties[d]==='day')dayPerson=emp.name;
-            if(emp.duties[d]==='evening')eveningPerson=emp.name;
-            if(emp.duties[d]==='weekend')weekendPerson=emp.name;
-            if(emp.duties[d])total++;
-        });
-
-        html+=`<div class="duty-card ${isToday?'today':''}">
-            <div class="day">${dayName}</div>
-            <div class="date">${d}</div>
-            ${dayPerson?`<div class="person day-shift">☀️ ${dayPerson}</div>`:''}
-            ${eveningPerson?`<div class="person evening-shift">🌙 ${eveningPerson}</div>`:''}
-            ${weekendPerson?`<div class="person weekend">🏖️ ${weekendPerson}</div>`:''}
-        </div>`;
-    }
-
-    grid.innerHTML=html;
-    document.getElementById('dutyTodayCount').textContent=
-        (data.today.day?.length||0)+(data.today.evening?.length||0);
-    document.getElementById('dutyMonthCount').textContent=total;
-}
-
-// ===== TASKS =====
 function updateTaskStats(){
     const now=new Date();
     let active=0,done=0,overdue=0;
@@ -295,10 +329,6 @@ function updateTaskStats(){
     document.getElementById('taskActive').textContent=active;
     document.getElementById('taskDone').textContent=done;
     document.getElementById('taskOverdue').textContent=overdue;
-    document.getElementById('statTotal').textContent=allTasks.length;
-    document.getElementById('statDoneAll').textContent=done;
-    document.getElementById('statProgressAll').textContent=active;
-    document.getElementById('statOverdueAll').textContent=overdue;
 }
 
 function filterTasks(){
@@ -364,7 +394,9 @@ function esc(t){const d=document.createElement('div');d.textContent=t||'';return
 // ===== INIT =====
 (function(){
     try{cfg=JSON.parse(localStorage.getItem('dash_cfg')||'{}')}catch(e){}
-    if(!cfg.domain)cfg={domain:'',token:'',appsScript:''};
+    if(!cfg.appsScript)cfg.appsScript='';
+    if(!cfg.domain)cfg.domain='';
+    if(!cfg.token)cfg.token='';
     loadData();
 })();
 </script>
