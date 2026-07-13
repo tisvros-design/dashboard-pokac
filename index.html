@@ -238,14 +238,14 @@ function loadTasks(){
     // Запрос 1: Новые задачи (status=1) — для приоритетов, Трамвая
     var reqNew=JSON.stringify({
         page:1,pageSize:100,
-        fields:'id,name,status,customFields.1872,customFields.12126,dateTime',
+        fields:'id,name,status,1872,12126,dateTime',
         filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'equal',value:1}]
     });
 
     // Запрос 2: Все активные (кроме завершено/отменено) — для выездных
     var reqActive=JSON.stringify({
         page:1,pageSize:100,
-        fields:'id,name,status,customFields.12126,dateTime',
+        fields:'id,name,status,12126,dateTime',
         filters:[{type:2,operator:'equal',value:'group:6164'},{type:10,operator:'notequal',value:3},{type:10,operator:'notequal',value:4}]
     });
 
@@ -389,24 +389,24 @@ function renderTasks(newTasks,activeTasks,doneTasks){
 
     var html='';
     html+=ww(total,totalToday,doneToday,'Новых','blue');
-    html+=ww(regular,regToday,doneToday,'Обычная','green');
-    html+=ww(urgent,urgToday,doneToday,'Срочная','yellow');
-    html+=ww(blocking,blkToday,doneToday,'Блокирующая','red');
-    html+=ww(support,supToday,doneToday,'Техподдержка','cyan');
-    html+=ww(internal,intToday,doneToday,'Поручения','purple');
-    html+=ww(tramvay,tramvayToday,doneToday,'🚃 Трамвай','orange');
-    html+=ww(onsite,onsiteToday,doneToday,'📍 Выездные','green');
-    if(noPriority)html+=ww(noPriority,npToday,doneToday,'Без приоритета','blue');
+    html+=ww(regular,regToday,0,'Обычная','green');
+    html+=ww(urgent,urgToday,0,'Срочная','yellow');
+    html+=ww(blocking,blkToday,0,'Блокирующая','red');
+    html+=ww(support,supToday,0,'Техподдержка','cyan');
+    html+=ww(internal,intToday,0,'Поручения','purple');
+    html+=ww(tramvay,tramvayToday,0,'🚃 Трамвай','orange');
+    html+=ww(onsite,onsiteToday,0,'📍 Выездные','green');
+    if(noPriority)html+=ww(noPriority,npToday,0,'Без приоритета','blue');
 
     el.innerHTML=html;
 }
 
 function ww(n,created,closed,label,color){
     var s='<div class="task-widget tw-color-'+color+'">';
-    s+='<div class="tw-created">+'+created+'</div>';
+    if(created)s+='<div class="tw-created">+'+created+'</div>';
     s+='<div class="tw-num">'+n+'</div>';
     s+='<div class="tw-label">'+label+'</div>';
-    s+='<div class="tw-closed">−'+closed+'</div>';
+    if(closed)s+='<div class="tw-closed">−'+closed+'</div>';
     return s+'</div>';
 }
 
