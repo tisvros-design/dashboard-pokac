@@ -166,8 +166,8 @@ function saveSettings(){
 }
 
 // === JSONP LOAD ===
-const DEFAULT_URL='https://script.google.com/macros/s/AKfycborxKtn9v8YaisgELgpWAK8RBU8HzD1_s9c1Vsw1z0FiXzNskKI4XoMOkKY785GgtAqSVvvpw/exec';
-let cbIdx=0;
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycbx0g_BirJn_3gyvZ-2lnjnpGT75Rydtu_TL21D00SQ0YOk62S8eqp4XcaJ3_hNS-7BkCZ/exec';
+let loadIdx=0;
 function loadDuty(){
     const url=cfg.url||DEFAULT_URL;
     if(!url){
@@ -177,26 +177,30 @@ function loadDuty(){
     
     document.getElementById('weekGrid').innerHTML='<div class="loading">⏳ Загрузка...</div>';
     
-    const cbName='_cb'+(++cbIdx);
-    window[cbName]=function(data){
-        delete window[cbName];
-        const el=document.getElementById('jp'+cbName);
-        if(el)el.remove();
-        
-        if(data.error){
-            document.getElementById('weekGrid').innerHTML='<div class="empty">❌ '+esc(data.error)+'</div>';
-            setConn(false);
-            return;
-        }
-        
-        cachedData=data;
-        setConn(true);
-        renderAll(data);
-    };
+    // Очищаем старые данные
+    window._dutyData=null;
     
     const s=document.createElement('script');
-    s.id='jp'+cbName;
-    s.src=url+'?mode=jsonp&callback='+cbName;
+    s.id='dutyScript'+(++loadIdx);
+    s.src=url+'?mode=jsonp';
+    s.onload=function(){
+        // JSONP записывает в window._dutyData
+        setTimeout(function(){
+            if(window._dutyData){
+                if(window._dutyData.error){
+                    document.getElementById('weekGrid').innerHTML='<div class="empty">❌ '+esc(window._dutyData.error)+'</div>';
+                    setConn(false);
+                }else{
+                    cachedData=window._dutyData;
+                    setConn(true);
+                    renderAll(window._dutyData);
+                }
+            }else{
+                document.getElementById('weekGrid').innerHTML='<div class="empty">❌ Нет данных. Проверьте URL.</div>';
+                setConn(false);
+            }
+        },500);
+    };
     s.onerror=function(){
         document.getElementById('weekGrid').innerHTML='<div class="empty">❌ Ошибка загрузки. Проверьте URL.</div>';
         setConn(false);
