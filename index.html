@@ -7,9 +7,9 @@
     <title>Dashboard POKAC</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0f1a;color:#e2e8f0;min-height:100vh;padding:16px}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b0f1a;color:#e2e8f0;min-height:100vh;padding:20px 16px}
 
-        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
         .header h1{font-size:20px;font-weight:700;color:#3b82f6}
         .hdr-right{display:flex;gap:8px;align-items:center}
         .hdr-btn{background:#1e293b;border:1px solid #2d3a50;border-radius:8px;padding:6px 12px;color:#94a3b8;font-size:12px;cursor:pointer}
@@ -18,32 +18,29 @@
         .conn.ok{background:rgba(16,185,129,.15);color:#10b981}
         .conn.off{background:rgba(100,116,139,.15);color:#64748b}
 
-        /* Carousel */
-        .carousel-wrap{position:relative;margin-bottom:32px}
-        .carousel-nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(30,41,59,.9);border:1px solid #2d3a50;color:#94a3b8;font-size:16px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;transition:all .2s}
+        /* Carousel — centered, no scroll */
+        .carousel-wrap{display:flex;align-items:center;gap:12px;max-width:1200px;margin:0 auto 24px}
+        .carousel-nav{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#1e293b;border:2px solid #2d3a50;color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
         .carousel-nav:hover{border-color:#3b82f6;color:#3b82f6;background:#0f172a}
-        .carousel-nav.prev{left:4px}
-        .carousel-nav.next{right:4px}
-        .carousel{display:flex;gap:12px;overflow-x:auto;scroll-behavior:smooth;padding:8px 50px;-ms-overflow-style:none;scrollbar-width:none}
-        .carousel::-webkit-scrollbar{display:none}
+        .carousel{display:flex;gap:10px;justify-content:center;flex:1;min-width:0}
 
-        .day-card{flex:0 0 160px;background:#1e293b;border:2px solid #2d3a50;border-radius:14px;padding:16px 12px;text-align:center;transition:all .2s}
+        .day-card{flex:1 1 0;min-width:100px;max-width:160px;background:#1e293b;border:2px solid #2d3a50;border-radius:14px;padding:14px 8px;text-align:center;transition:all .2s}
         .day-card:hover{transform:translateY(-3px);border-color:#3b82f6}
-        .day-card.today{border-color:#10b981;background:linear-gradient(135deg,#064e3b 0%,#1e293b 100%);box-shadow:0 0 24px rgba(16,185,129,.25);flex:0 0 180px}
-        .day-card.weekend-card{opacity:.65}
+        .day-card.today{border-color:#10b981;background:linear-gradient(135deg,#064e3b 0%,#1e293b 100%);box-shadow:0 0 24px rgba(16,185,129,.25)}
+        .day-card.weekend-card{opacity:.6}
 
-        .day-name{font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:2px}
-        .day-date{font-size:20px;font-weight:800;color:#e2e8f0;margin-bottom:10px}
-        .day-card.today .day-date{color:#10b981;font-size:24px}
+        .day-name{font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:2px}
+        .day-date{font-size:18px;font-weight:800;color:#e2e8f0;margin-bottom:8px}
+        .day-card.today .day-date{color:#10b981;font-size:22px}
         .day-card.today .day-name{color:#10b981}
 
-        .duty-line{display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:600;margin-bottom:3px;line-height:1.3}
-        .duty-icon{font-size:13px}
+        .duty-line{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;margin-bottom:2px;line-height:1.3}
+        .duty-icon{font-size:12px}
         .duty-name.day{color:#60a5fa}
         .duty-name.evening{color:#fb923c}
         .duty-name.weekend{color:#34d399}
         .duty-name.vacation{color:#a78bfa}
-        .duty-empty{color:#475569;font-size:11px}
+        .duty-empty{color:#475569;font-size:10px}
 
         /* Settings */
         .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center}
@@ -54,21 +51,19 @@
         .modal label{display:block;font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:4px}
         .modal input{width:100%;padding:10px;background:#0f172a;border:1px solid #2d3a50;border-radius:6px;color:#e2e8f0;font-size:13px}
         .modal input:focus{outline:none;border-color:#3b82f6}
-        .modal .hint{font-size:10px;color:#64748b;margin-top:4px}
         .mbtn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
         .mbtn.p{background:#3b82f6;color:white}
         .mbtn.s{background:#334155;color:#e2e8f0}
-        .mbtn.d{background:#7f1d1d;color:#fca5a5;margin-top:4px}
 
-        .empty{text-align:center;padding:40px;color:#64748b;font-size:13px}
-        .loading{text-align:center;padding:30px;color:#64748b}
-
-        .update-time{text-align:center;margin-top:20px;font-size:11px;color:#475569}
+        .loading{text-align:center;padding:40px;color:#64748b}
+        .update-time{text-align:center;margin-top:24px;font-size:11px;color:#475569}
 
         @media(max-width:700px){
-            .day-card{flex:0 0 130px}
-            .day-card.today{flex:0 0 150px}
-            .carousel-nav{display:none}
+            .day-card{padding:10px 6px}
+            .day-date{font-size:14px}
+            .day-card.today .day-date{font-size:18px}
+            .duty-line{font-size:10px}
+            .carousel-nav{width:32px;height:32px;font-size:14px}
         }
     </style>
 </head>
@@ -82,18 +77,16 @@
     </div>
 </div>
 
-<!-- Carousel -->
 <div class="carousel-wrap">
-    <button class="carousel-nav prev" onclick="scrollCarousel(-3)">◀</button>
+    <button class="carousel-nav" onclick="scrollCarousel(-1)">◀</button>
     <div class="carousel" id="carousel">
         <div class="loading">⏳ Загрузка графика...</div>
     </div>
-    <button class="carousel-nav next" onclick="scrollCarousel(3)">▶</button>
+    <button class="carousel-nav" onclick="scrollCarousel(1)">▶</button>
 </div>
 
 <div class="update-time" id="updateTime"></div>
 
-<!-- Settings Modal -->
 <div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
     <div class="modal">
         <h2>⚙️ Настройки</h2>
@@ -110,9 +103,8 @@
 var DEFAULT_URL='https://script.google.com/macros/s/AKfycby9JoXmATa6_YaXuWSBdmVT2KBpOz-Dp1FWHb1cPoJqrG4-ow2bKfWfXlb3DzTvNnJLQo/exec';
 var cfg={url:''};
 var cachedData=null;
-var viewOffset=0; // смещение от сегодня
+var viewOffset=0;
 
-// === SETTINGS ===
 function openSettings(){
     document.getElementById('cfgUrl').value=cfg.url||'';
     document.getElementById('settingsModal').classList.add('active');
@@ -125,15 +117,14 @@ function saveSettings(){
     loadDuty();
 }
 
-// === JSONP LOAD ===
 var loadIdx=0;
 function loadDuty(){
     var url=cfg.url||DEFAULT_URL;
-    if(!url){return;}
+    if(!url)return;
     window._dutyData=null;
 
     var s=document.createElement('script');
-    s.id='dutyScript'+(++loadIdx);
+    s.id='ds'+(++loadIdx);
     s.src=url+'?mode=jsonp&_='+Date.now();
     s.onload=function(){
         setTimeout(function(){
@@ -142,12 +133,9 @@ function loadDuty(){
                 setConn(true);
                 viewOffset=0;
                 renderCarousel();
-            }else{
-                setConn(false);
-            }
+            }else{setConn(false)}
         },300);
     };
-
     s.onerror=function(){setConn(false)};
     document.body.appendChild(s);
 }
@@ -158,77 +146,51 @@ function setConn(ok){
     else{el.className='conn off';el.textContent='○ Отключено'}
 }
 
-// === CAROUSEL ===
 function renderCarousel(){
     if(!cachedData||!cachedData.employees)return;
     var data=cachedData;
     var today=data.date.day;
     var year=data.date.year;
     var month=data.date.month;
-
-    // Центр — сегодня + offset
     var centerDay=today+viewOffset;
     var centerDate=new Date(year,month-1,centerDay);
-
-    // Показываем 7 дней: center-3 ... center+3
-    var startOffset=-3;
-    var endOffset=3;
-
+    var dayNames=['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
     var html='';
-    for(var i=startOffset;i<=endOffset;i++){
+
+    for(var i=-3;i<=3;i++){
         var d=new Date(centerDate);
         d.setDate(centerDate.getDate()+i);
         var dayNum=d.getDate();
         var dMonth=d.getMonth()+1;
         var isToday=(dayNum===today && dMonth===month && d.getFullYear()===year);
-        var isWeekend=d.getDay()===0||d.getDay()===6;
-        var dayNames=['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+        var isWk=d.getDay()===0||d.getDay()===6;
 
-        // Ищем дежурных
-        var dayP=[],eveningP=[],weekendP=[];
+        var dp=[],ep=[],wp=[];
         data.employees.forEach(function(emp){
             var v=emp.duties[dayNum];
-            if(v==='day')dayP.push(emp.name);
-            else if(v==='evening')eveningP.push(emp.name);
-            else if(v==='weekend')weekendP.push(emp.name);
+            if(v==='day')dp.push(emp.name);
+            else if(v==='evening')ep.push(emp.name);
+            else if(v==='weekend')wp.push(emp.name);
         });
 
-        var dateStr=dayNum+'.'+String(dMonth).padStart(2,'0');
-
-        html+='<div class="day-card'+(isToday?' today':'')+(isWeekend?' weekend-card':'')+'">';
+        html+='<div class="day-card'+(isToday?' today':'')+(isWk?' weekend-card':'')+'">';
         html+='<div class="day-name">'+dayNames[d.getDay()]+'</div>';
-        html+='<div class="day-date">'+dateStr+'</div>';
-        if(dayP.length||eveningP.length||weekendP.length){
-            if(dayP.length) html+='<div class="duty-line"><span class="duty-icon">☀️</span><span class="duty-name day">'+esc(dayP.join(', '))+'</span></div>';
-            if(eveningP.length) html+='<div class="duty-line"><span class="duty-icon">🌙</span><span class="duty-name evening">'+esc(eveningP.join(', '))+'</span></div>';
-            if(weekendP.length) html+='<div class="duty-line"><span class="duty-icon">⛱</span><span class="duty-name weekend">'+esc(weekendP.join(', '))+'</span></div>';
-        }else{
-            html+='<div class="duty-empty">—</div>';
-        }
+        html+='<div class="day-date">'+dayNum+'.'+String(dMonth).padStart(2,'0')+'</div>';
+        if(dp.length)html+='<div class="duty-line"><span class="duty-icon">☀️</span><span class="duty-name day">'+esc(dp.join(', '))+'</span></div>';
+        if(ep.length)html+='<div class="duty-line"><span class="duty-icon">🌙</span><span class="duty-name evening">'+esc(ep.join(', '))+'</span></div>';
+        if(wp.length)html+='<div class="duty-line"><span class="duty-icon">⛱</span><span class="duty-name weekend">'+esc(wp.join(', '))+'</span></div>';
+        if(!dp.length&&!ep.length&&!wp.length)html+='<div class="duty-empty">—</div>';
         html+='</div>';
     }
 
     document.getElementById('carousel').innerHTML=html;
-
-    // Прокрутить к центру (сегодня)
-    setTimeout(function(){
-        var c=document.getElementById('carousel');
-        var cards=c.querySelectorAll('.day-card');
-        if(cards[3]) cards[3].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
-    },100);
-
     document.getElementById('updateTime').textContent='Обновлено: '+new Date().toLocaleString('ru-RU');
 }
 
-function scrollCarousel(days){
-    viewOffset+=days;
-    renderCarousel();
-}
+function scrollCarousel(d){viewOffset+=d;renderCarousel()}
 
-// === UTILS ===
-function esc(t){var d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
+function esc(t){var e=document.createElement('div');e.textContent=t||'';return e.innerHTML}
 
-// === INIT ===
 (function(){
     try{cfg=JSON.parse(localStorage.getItem('duty_cfg')||'{}')}catch(e){}
     if(!cfg.url)cfg.url='';
